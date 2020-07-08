@@ -3,7 +3,7 @@ const app = express();
 const PORT = 2000;
 
 app.get("/", (req,res) => {
-    res.send("Koo io main page");
+    res.sendFile(__dirname + "/views/main.html");
 });
 
 app.get("*", (req,res) => {
