@@ -1,4 +1,22 @@
 {
+  "name": "koo.io",
+  "description": "koo is Coup",
+  "version": "1.0.0",
+  "main": "app.js",
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/BrandonCHW/koo.io.git"
+  },
+  "author": "bredyvan",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/BrandonCHW/koo.io/issues"
+  },
+  "homepage": "https://github.com/BrandonCHW/koo.io#readme",
   "dependencies": {
     "express": "^4.17.1",
     "socket.io": "^2.3.0"
