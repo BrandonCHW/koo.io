@@ -6,7 +6,7 @@ const io = require('socket.io')(http)
 const PORT = 3000
 
 app.get("/", (req,res) => {
-    res.sendFile(__dirname + "/views/main.html")
+    res.sendFile(__dirname + "/client/main.html")
 });
 
 app.get("*", (req,res) => {
