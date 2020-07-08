@@ -11,7 +11,7 @@
         body,html {
             background: lightpink; 
         }
-        canvas {
+        canvas {    
             width: 100%;
             height: 100%;
             border: 1px solid black;
@@ -20,7 +20,19 @@
     </style>
 </head>
 <body>
-    <h1>Koo.io main page</h1>
+    <h1>Koo.io</h1>
+    <div>
+        <label for="userId">Your Name: </label>
+        <input id="userId" type="text">        
+    </div>
+    <div>
+        <button>Find Lobby</button>
+        <button>Create Lobby</button>
+    </div>
+    <div>
+        <button>Rules</button>
+    </div>
+    <p>Credits: Bred and Chimp, inspired by Rikki Rahta's Coup Original recipe nice</p>
     <canvas id="ctx"></canvas>
 </body>
 </html>
