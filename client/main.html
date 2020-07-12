@@ -35,7 +35,9 @@
 
     <!-- Other players data -->
     <div>
-
+        <h1>Other Players</h1>
+        <p>cartemere Card 1:<span id="temp1Card1">?</span> Card 2:<span id="temp1Card2">?</span> Coins:<span id="temp1Coins">0</span> </p>
+        <p>ChimpUnleashed Card1:<span id="temp2Card1">?</span> Card 2:<span id="temp2Card2">?</span> Coins:<span id="temp2Coins">0</span> </p>
     </div>
 
     <!-- Current player data -->
@@ -63,6 +65,12 @@
             <button id="exchange">Exchange: Take 2 cards, keep 1</button>
         </div>
 
+        <div id="playerSelector" style="display: none;">
+            <h4>Who do you want to <span id="intention">lemheurdheur</span>?</h4>
+            <button onclick="selectPlayer(this)">cartemere</button>
+            <button onclick="selectPlayer(this)">ChimpUnleashed</button>
+        </div>
+
         <script>
             // var a = $("div[id='actions'] div button").on("click", function(btn) {
             //     console.log(btn.target.id)
@@ -87,17 +95,18 @@
             })
             var steal = $("#steal").on("click", function() {
                 changeCoins(2)
+                declareIntention("steal from")
                 console.log("steal")
             })
             var assassinate = $("#assassinate").on("click", function() {
                 console.log("assassinate")
-
+                declareIntention("assassinate")
             })
             var exchange = $("#exchange").on("click", function() {
                 console.log("exchange")
             })
 
-            //add or remove coins by a certain amount
+            //add or remove coins by a certain amount (number)
             changeCoins = function(amount) {
                 if (money + amount < 0) {
                     console.log("Not enough coins")
@@ -107,6 +116,17 @@
                     money += amount
                     $("#pCoins").text(money.toString())
                 }
+            }
+
+            //Declares the intention (String)
+            declareIntention = function(intention) {
+                $("#playerSelector").css("display","block")
+                $("#intention").text(intention)
+            }
+
+            selectPlayer = function(identifier) {
+                console.log("selected player", $(identifier).text());
+                $("#playerSelector").css("display","none")
             }
         </script>
     </div>
