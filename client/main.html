@@ -71,20 +71,22 @@
             var money = 0
             var income = $("#income").on("click", function() {
                 changeCoins(1) 
+                console.log("income")
             })
-
             var foreign = $("#foreign").on("click", function() {
                 changeCoins(2)
+                console.log("foreign")
             })
-
             var coup = $("#coup").on("click", function() {
                 changeCoins(-7)
+                console.log("coup")
             })
-
             var tax = $("#tax").on("click", function() {
+                changeCoins(3)
                 console.log("tax")
             })
             var steal = $("#steal").on("click", function() {
+                changeCoins(2)
                 console.log("steal")
             })
             var assassinate = $("#assassinate").on("click", function() {
@@ -93,7 +95,6 @@
             })
             var exchange = $("#exchange").on("click", function() {
                 console.log("exchange")
-
             })
 
             //add or remove coins by a certain amount
@@ -101,7 +102,7 @@
                 if (money + amount < 0) {
                     console.log("Not enough coins")
                 } else if (money >= 10 && amount > 0) {
-                    console.log("Can't perform action (Over 10 coins)")
+                    alert("Can't perform action (Over 10 coins, must Coup)")
                 } else {
                     money += amount
                     $("#pCoins").text(money.toString())
