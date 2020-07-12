@@ -10,7 +10,7 @@ app.get("/", (req,res) => {
 });
 
 app.get("*", (req,res) => {
-    res.send("Is this the real life? Is this just fantasy? (ERROR PAGE)")
+    res.send("Error")
 });
 
 io.on('connection', (socket) => {
