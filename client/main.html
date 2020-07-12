@@ -81,6 +81,21 @@
                 changeCoins(-7)
             })
 
+            var tax = $("#tax").on("click", function() {
+                console.log("tax")
+            })
+            var steal = $("#steal").on("click", function() {
+                console.log("steal")
+            })
+            var assassinate = $("#assassinate").on("click", function() {
+                console.log("assassinate")
+
+            })
+            var exchange = $("#exchange").on("click", function() {
+                console.log("exchange")
+
+            })
+
             //add or remove coins by a certain amount
             changeCoins = function(amount) {
                 if (money + amount < 0) {
