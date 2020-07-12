@@ -64,12 +64,32 @@
         </div>
 
         <script>
-            var a = $("div[id='actions'] div button").on("click", function(btn) {
-                console.log(btn.target.id)
-            })
-            // var income = $("#incomeBtn").click(function() {
-            //     console.log("income")
+            // var a = $("div[id='actions'] div button").on("click", function(btn) {
+            //     console.log(btn.target.id)
             // })
+
+            var money = 0
+            var income = $("#income").on("click", function() {
+                changeCoins(1) 
+            })
+
+            var foreign = $("#foreign").on("click", function() {
+                changeCoins(2)
+            })
+
+            var coup = $("#coup").on("click", function() {
+                changeCoins(-7)
+            })
+
+            //add or remove coins by a certain amount
+            changeCoins = function(amount) {
+                if (money + amount < 0) {
+                    console.log("Not enough coins")
+                    return
+                }
+                money += amount
+                $("#pCoins").text(money.toString())
+            }
         </script>
     </div>
 
