@@ -100,10 +100,12 @@
             changeCoins = function(amount) {
                 if (money + amount < 0) {
                     console.log("Not enough coins")
-                    return
+                } else if (money >= 10 && amount > 0) {
+                    console.log("Can't perform action (Over 10 coins)")
+                } else {
+                    money += amount
+                    $("#pCoins").text(money.toString())
                 }
-                money += amount
-                $("#pCoins").text(money.toString())
             }
         </script>
     </div>
