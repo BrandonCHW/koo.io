@@ -9,17 +9,27 @@ app.get("/", (req,res) => {
     res.sendFile(__dirname + "/client/main.html")
 });
 
-app.get("*", (req,res) => {
-    res.send("Error")
-});
+const SOCKET_LIST = {};
 
 io.on('connection', (socket) => {
-    console.log("new socket connection")
-    socket.on('disconnect', () => {
-        console.log("socket disconnected")
+    socket.on('action payload', (obj) => {
+        console.log(obj)
     })
+    // console.log("new socket connection")
+    socket.on('disconnect', () => {
+        // console.log("socket disconnected")
+    })
+});
+
+app.get("*", (req,res) => {
+    res.send("Error")
 });
 
 http.listen(PORT, () => {
     console.log(`Listening on port ${PORT}`)
 });
+
+setInterval(function() {
+    // console.log("hello")
+    
+},1000)

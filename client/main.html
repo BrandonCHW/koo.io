@@ -5,9 +5,6 @@
     <!-- <script type="text/javascript" src="listeners.js"></script> -->
     <script type="text/javascript" src="/socket.io/socket.io.js"></script>
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha256-4+XzXVhsDmqanXGHaHvgh1gMQKX40OUvDEBTu8JcmNs=" crossorigin="anonymous"></script>
-    <script>
-        var socket = io()       
-    </script>
     <title>Koo.io</title>
     <style>
         body,html {
@@ -66,7 +63,7 @@
         </div>
 
         <div id="playerSelector" style="display: none;">
-            <h4>Who do you want to <span id="intention">lemheurdheur</span>?</h4>
+            <h4>Intention: <span id="intention">lemheurdheur</span></h4>
             <button onclick="selectPlayer(this)">cartemere</button>
             <button onclick="selectPlayer(this)">ChimpUnleashed</button>
         </div>
@@ -76,7 +73,20 @@
             //     console.log(btn.target.id)
             // })
 
+            var socket = io()
+
+            class ActionPayload { 
+                constructor(intent, to="") {
+                    this.id = socket.id
+                    this.intent = intent
+                    this.to = to
+                }
+            }
+
             var money = 0
+            var temp1Money = 0; //cartemere
+            var temp2Money = 0; //ChimpUnleashed
+
             var income = $("#income").on("click", function() {
                 changeCoins(1) 
                 console.log("income")
@@ -95,7 +105,7 @@
             })
             var steal = $("#steal").on("click", function() {
                 changeCoins(2)
-                declareIntention("steal from")
+                declareIntention("steal")
                 console.log("steal")
             })
             var assassinate = $("#assassinate").on("click", function() {
@@ -107,7 +117,7 @@
             })
 
             //add or remove coins by a certain amount (number)
-            changeCoins = function(amount) {
+            function changeCoins(amount) {
                 if (money + amount < 0) {
                     console.log("Not enough coins")
                 } else if (money >= 10 && amount > 0) {
@@ -119,15 +129,30 @@
             }
 
             //Declares the intention (String)
-            declareIntention = function(intention) {
+            function declareIntention(intention) {
                 $("#playerSelector").css("display","block")
                 $("#intention").text(intention)
             }
 
-            selectPlayer = function(identifier) {
+            //choose a player (steal, assassinate)
+            function selectPlayer(identifier) {
                 console.log("selected player", $(identifier).text());
                 $("#playerSelector").css("display","none")
+
+                socket.emit('action payload', 
+                    new ActionPayload("player", $("#intention").text(), $(identifier).text()))
             }
+
+            // steal from a player (captain)
+            function stealFrom(playerName, amount) {
+
+            }
+
+            // choose a player to assassinate
+            function assassinatePlayer(playerName) {
+
+            }
+
         </script>
     </div>
 
