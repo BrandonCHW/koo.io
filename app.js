@@ -9,15 +9,22 @@ app.get("/", (req,res) => {
     res.sendFile(__dirname + "/client/main.html")
 });
 
-const SOCKET_LIST = {};
+const SOCKET_LIST = {}
+
+class GameStatePayload {
+    constructor() {
+        this.message = "hello"
+    }
+}
 
 io.on('connection', (socket) => {
-    socket.on('action payload', (obj) => {
-        console.log(obj)
+    SOCKET_LIST[socket.id] = socket
+    socket.on('ActionPayload', (p) => {
+        console.log('received')
+        socket.emit('GameStatePayload', new GameStatePayload())
     })
-    // console.log("new socket connection")
     socket.on('disconnect', () => {
-        // console.log("socket disconnected")
+        delete SOCKET_LIST[socket.id]
     })
 });
 

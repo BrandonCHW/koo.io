@@ -74,6 +74,9 @@
             // })
 
             var socket = io()
+            socket.on('GameStatePayload', (p) => {
+                console.log(p)
+            })
 
             class ActionPayload { 
                 constructor(intent, to="") {
@@ -139,18 +142,8 @@
                 console.log("selected player", $(identifier).text());
                 $("#playerSelector").css("display","none")
 
-                socket.emit('action payload', 
+                socket.emit('ActionPayload', 
                     new ActionPayload("player", $("#intention").text(), $(identifier).text()))
-            }
-
-            // steal from a player (captain)
-            function stealFrom(playerName, amount) {
-
-            }
-
-            // choose a player to assassinate
-            function assassinatePlayer(playerName) {
-
             }
 
         </script>
