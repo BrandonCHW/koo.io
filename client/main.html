@@ -100,11 +100,11 @@
         })
 
         function updateSelfView(p) {
-            document.getElementById("pCoins").textContent = p.coins
-            document.getElementById("pCard1Name").textContent = p.firstCard
-            document.getElementById("pCard1Status").textContent = p.firstCardStatus
-            document.getElementById("pCard2Name").textContent = p.secondCard
-            document.getElementById("pCard1Status").textContent = p.secondCardStatus
+            $("pCoins").text(p.coins)
+            $("pCard1Name").text(p.firstCard)
+            $("pCard1Status").text(p.firstCardStatus)
+            $("pCard2Name").text(p.secondCard)
+            $("pCard1Status").text(p.secondCardStatus)
         }
 
         function updateTimer(time) {
