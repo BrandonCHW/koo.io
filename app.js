@@ -30,10 +30,6 @@ const SOCKET_LIST = {}
 class GameStatePayload {
     constructor(gameState) {
         this.gameState = gameState
-        this.players =  [
-                {att1: "att1"},
-                {att2: "att2"}
-            ]
     }
 }
 
@@ -61,11 +57,15 @@ io.on('connection', (socket) => {
     SOCKET_LIST[socket.id] = socket
     game.players.push(new Player(socket.id))
 
-    //send initial game state 
+    // a single lobby 
+    socket.join('room1')
+
+    //send initial game state + player's id 
     socket.emit('GameStatePayload', new GameStatePayload(game))
 
     socket.on('action', (p) => {
         changeGameState(p)
+        // send new game state
         socket.emit('GameStatePayload', new GameStatePayload(game))
     })
     socket.on('disconnect', () => {
@@ -80,7 +80,7 @@ function changeGameState(actionPayload) {
         case "foreign": handleCoinsChange(id, 2); break;
         case "coup": handleCoinsChange(id, -7); break;
         case "tax": handleCoinsChange(id, 3); break;
-        case "steal": break;
+        case "steal": handleSteal(id, actionPayload.to);
         case "assassinate": break;
         case "exchange": break;
         default: break;
@@ -98,6 +98,12 @@ function handleCoinsChange(id, amount) {
         } else {
             player.coins += amount
         }
+    }
+}
+
+function handleSteal(id, to) {
+    var player = game.players.find(p => p.id = id)
+    if (player) {
     }
 }
 
