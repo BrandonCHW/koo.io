@@ -85,11 +85,17 @@
 
         // Receive new game state updates
         var socket = io()
+        
+        socket.on('connect',  () => {
+            console.log(socket.id)
+        })
+
+        // called whenever the game state changes (new connection, action)
         socket.on('state change', (p) => {
             // updateSelfView(p)
         })
 
-        // called when the player bitconnects to the lobby
+        // called when the player bitconnects to the game
         socket.on('self connection', (initialState) => {
             updateSelfView(initialState)
         })
