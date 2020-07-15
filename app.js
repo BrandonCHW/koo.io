@@ -59,9 +59,13 @@ io.on('connection', (socket) => {
 
     // a single lobby 
     socket.join('room1')
+    
+    //send player identity
+    var initialState = game.players.find(p => p.id === socket.id)
+    io.to(socket.id).emit('self connection', initialState)   
 
-    //send initial game state + player's id 
-    socket.to('room1').emit('state change', new GameStatePayload(game))
+    //TODO notify other players of new connection
+    io.to('room1').emit('state change', new GameStatePayload(game))
 
     socket.on('action', (p) => {
         changeGameState(p)
@@ -70,7 +74,7 @@ io.on('connection', (socket) => {
     })
     socket.on('disconnect', () => {
         delete SOCKET_LIST[socket.id]
-        socket.emit('state change')
+        //TODO notify other players of disconnection
     })
 });
 
@@ -90,7 +94,7 @@ function changeGameState(actionPayload) {
 
 //add or remove coins by a certain amount
 function handleCoinsChange(id, amount) {
-    var player = game.players.find(p => p.id = id)
+    var player = game.players.find(p => p.id === id)
     if (player) {
         if (player.coins + amount < 0) {
             console.log("Not enough coins")
@@ -103,7 +107,7 @@ function handleCoinsChange(id, amount) {
 }
 
 function handleSteal(id, to) {
-    var player = game.players.find(p => p.id = id)
+    var player = game.players.find(p => p.id === id)
     if (player) {
     }
 }

@@ -86,7 +86,12 @@
         // Receive new game state updates
         var socket = io()
         socket.on('state change', (p) => {
-            updateView(p)
+            // updateSelfView(p)
+        })
+
+        // called when the player bitconnects to the lobby
+        socket.on('self connection', (initialState) => {
+            updateSelfView(initialState)
         })
 
         // Receive timer update (regularly updated)
@@ -94,13 +99,12 @@
             updateTimer(time)
         })
 
-        function updateView(p) {
-            const p1 = p.gameState.players[0]
-            document.getElementById("pCoins").textContent = p1.coins
-            document.getElementById("pCard1Name").textContent = p1.firstCard
-            document.getElementById("pCard1Status").textContent = p1.firstCardStatus
-            document.getElementById("pCard2Name").textContent = p1.secondCard
-            document.getElementById("pCard1Status").textContent = p1.secondCardStatus
+        function updateSelfView(p) {
+            document.getElementById("pCoins").textContent = p.coins
+            document.getElementById("pCard1Name").textContent = p.firstCard
+            document.getElementById("pCard1Status").textContent = p.firstCardStatus
+            document.getElementById("pCard2Name").textContent = p.secondCard
+            document.getElementById("pCard1Status").textContent = p.secondCardStatus
         }
 
         function updateTimer(time) {
@@ -114,9 +118,6 @@
                 this.to = to
             }
         }
-
-        var temp1Money = 0; //cartemere
-        var temp2Money = 0; //ChimpUnleashed
 
         var income = $("#income").on("click", function() {
             socket.emit('action', new ActionPayload("income"))
