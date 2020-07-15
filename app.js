@@ -30,10 +30,6 @@ const SOCKET_LIST = {}
 class GameStatePayload {
     constructor(gameState) {
         this.gameState = gameState
-        this.players =  [
-                {att1: "att1"},
-                {att2: "att2"}
-            ]
     }
 }
 
@@ -61,15 +57,24 @@ io.on('connection', (socket) => {
     SOCKET_LIST[socket.id] = socket
     game.players.push(new Player(socket.id))
 
-    //send initial game state 
-    socket.emit('GameStatePayload', new GameStatePayload(game))
+    // a single lobby 
+    socket.join('room1')
+    
+    //send player identity
+    var initialState = game.players.find(p => p.id === socket.id)
+    io.to(socket.id).emit('self connection', initialState)   
+
+    //TODO notify other players of new connection
+    io.to('room1').emit('state change', new GameStatePayload(game))
 
     socket.on('action', (p) => {
         changeGameState(p)
-        socket.emit('GameStatePayload', new GameStatePayload(game))
+        // send new game state
+        socket.emit('state change', new GameStatePayload(game))
     })
     socket.on('disconnect', () => {
         delete SOCKET_LIST[socket.id]
+        //TODO notify other players of disconnection
     })
 });
 
@@ -80,7 +85,7 @@ function changeGameState(actionPayload) {
         case "foreign": handleCoinsChange(id, 2); break;
         case "coup": handleCoinsChange(id, -7); break;
         case "tax": handleCoinsChange(id, 3); break;
-        case "steal": break;
+        case "steal": handleSteal(id, actionPayload.to);
         case "assassinate": break;
         case "exchange": break;
         default: break;
@@ -89,7 +94,7 @@ function changeGameState(actionPayload) {
 
 //add or remove coins by a certain amount
 function handleCoinsChange(id, amount) {
-    var player = game.players.find(p => p.id = id)
+    var player = game.players.find(p => p.id === id)
     if (player) {
         if (player.coins + amount < 0) {
             console.log("Not enough coins")
@@ -101,11 +106,18 @@ function handleCoinsChange(id, amount) {
     }
 }
 
+function handleSteal(id, to) {
+    var player = game.players.find(p => p.id === id)
+    if (player) {
+    }
+}
+
 var time = 100;
 setInterval(function() {
     for(var i in SOCKET_LIST) {
         var socket = SOCKET_LIST[i]
         socket.emit('timer', time)
     }
-    time--
+    if (time > 0)
+        time--
 },1000)

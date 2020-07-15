@@ -100,87 +100,103 @@
     
         <!-- Card Select (Exchange) -->
         <div>
-    
-        </div>    
-    
-        <script>
-            // var a = $("div[id='actions'] div button").on("click", function(btn) {
-            //     console.log(btn.target.id)
-            // })
-    
-            // Receive new game state updates
-            var socket = io()
-            socket.on('GameStatePayload', (p) => {
-                updateView(p)
-            })
-    
-            // Receive timer update (regularly updated)
-            socket.on('timer', (time) => {
-                updateTimer(time)
-            })
-    
-            function updateView(p) {
-                const p1 = p.gameState.players[0]
-                document.getElementById("pCoins").textContent = p1.coins
-                document.getElementById("pCard1Name").textContent = p1.firstCard
-                document.getElementById("pCard1Status").textContent = p1.firstCardStatus
-                document.getElementById("pCard2Name").textContent = p1.secondCard
-                document.getElementById("pCard1Status").textContent = p1.secondCardStatus
+            <button id="tax">Tax: +3 Coins</button>
+            <button id="steal">Steal: Yoink (+2 coins)</button>
+            <button id="assassinate">Assassinate: Kill (-3 Coins)</button>
+            <button id="exchange">Exchange: Take 2 cards, keep 1</button>
+        </div>
+
+        <div id="playerSelector" style="display: none;">
+            <h4>Intention: <span id="intention">lemheurdheur</span></h4>
+            <button onclick="selectPlayer(this)">cartemere</button>
+            <button onclick="selectPlayer(this)">ChimpUnleashed</button>
+        </div>
+
+    </div>
+
+    <!-- Card Select (Exchange) -->
+    <div>
+
+    </div>    
+
+    <script>
+        // var a = $("div[id='actions'] div button").on("click", function(btn) {
+        //     console.log(btn.target.id)
+        // })
+
+        // Receive new game state updates
+        var socket = io()
+        socket.on('state change', (p) => {
+            // updateSelfView(p)
+        })
+
+        // called when the player bitconnects to the lobby
+        socket.on('self connection', (initialState) => {
+            updateSelfView(initialState)
+        })
+
+        // Receive timer update (regularly updated)
+        socket.on('timer', (time) => {
+            updateTimer(time)
+        })
+
+        function updateSelfView(p) {
+            $("#pCoins").text(p.coins)
+            $("#pCard1Name").text(p.firstCard)
+            $("#pCard1Status").text(p.firstCardStatus)
+            $("#pCard2Name").text(p.secondCard)
+            $("#pCard1Status").text(p.secondCardStatus)
+        }
+
+        function updateTimer(time) {
+            var timer = document.getElementById("roundTimer").textContent = time
+        }
+
+        class ActionPayload { 
+            constructor(intent, to="") {
+                this.id = socket.id
+                this.intent = intent
+                this.to = to
             }
-    
-            function updateTimer(time) {
-                var timer = document.getElementById("roundTimer").textContent = time
-            }
-    
-            class ActionPayload { 
-                constructor(intent, to="") {
-                    this.id = socket.id
-                    this.intent = intent
-                    this.to = to
-                }
-            }
-    
-            var money = 0
-            var temp1Money = 0; //cartemere
-            var temp2Money = 0; //ChimpUnleashed
-    
-            var income = $("#income").on("click", function() {
-                socket.emit('action', new ActionPayload("income"))
-            })
-            var foreign = $("#foreign").on("click", function() {
-                socket.emit('action', new ActionPayload("foreign"))
-            })
-            var coup = $("#coup").on("click", function() {
-                socket.emit('action', new ActionPayload("coup"))
-            })
-            var tax = $("#tax").on("click", function() {
-                socket.emit('action', new ActionPayload("tax"))
-            })
-            var steal = $("#steal").on("click", function() {
-                changeCoins(2)
-                declareIntention("steal")
-            })
-            var assassinate = $("#assassinate").on("click", function() {
-                declareIntention("assassinate")
-            })
-            var exchange = $("#exchange").on("click", function() {
-            })
-    
-            //Declares the intention (String)
-            function declareIntention(intention) {
-                $("#playerSelector").css("display","block")
-                $("#intention").text(intention)
-            }
-    
-            //choose a player (steal, assassinate)
-            function selectPlayer(identifier) {
-                console.log("selected player", $(identifier).text());
-                $("#playerSelector").css("display","none")
-    
-                socket.emit('action', 
-                    new ActionPayload("player", $("#intention").text(), $(identifier).text()))
-            }
-    
-        </script>
-    </body>
+        }
+
+        var income = $("#income").on("click", function() {
+            socket.emit('action', new ActionPayload("income"))
+        })
+        var foreign = $("#foreign").on("click", function() {
+            socket.emit('action', new ActionPayload("foreign"))
+        })
+        var coup = $("#coup").on("click", function() {
+            socket.emit('action', new ActionPayload("coup"))
+        })
+        var tax = $("#tax").on("click", function() {
+            socket.emit('action', new ActionPayload("tax"))
+        })
+        var steal = $("#steal").on("click", function() {
+            changeCoins(2)
+            declareIntention("steal")
+        })
+        var assassinate = $("#assassinate").on("click", function() {
+            declareIntention("assassinate")
+        })
+        var exchange = $("#exchange").on("click", function() {
+        })
+
+        //Declares the intention (String)
+        function declareIntention(intention) {
+            $("#playerSelector").css("display","block")
+            $("#intention").text(intention)
+        }
+
+        //choose a player (steal, assassinate)
+        function selectPlayer(identifier) {
+            console.log("selected player", $(identifier).text());
+            $("#playerSelector").css("display","none")
+
+            socket.emit('action', 
+                new ActionPayload("player", $("#intention").text(), $(identifier).text()))
+        }
+
+    </script>
+</body>
 </html>
