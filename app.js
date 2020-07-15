@@ -26,23 +26,26 @@ http.listen(PORT, () => {
 ///////////////////////////////////
 const SOCKET_LIST = {}
 
-// may not need this
+// TODO may not need this
 class GameStatePayload {
     constructor(gameState) {
         this.gameState = gameState
+        this.players =  [
+                {att1: "att1"},
+                {att2: "att2"}
+            ]
     }
 }
 
 class GameState {
     constructor() {
         this.players = []
-        this.turn
     }
 }
 
 class Player {
     constructor(id) {
-        // this.id = id
+        this.id = id    // TODO maybe remove this later
         this.coins = 0
         this.firstCard = "Hero1"
         this.firstCardStatus = "Alive"
@@ -61,13 +64,42 @@ io.on('connection', (socket) => {
     //send initial game state 
     socket.emit('GameStatePayload', new GameStatePayload(game))
 
-    socket.on('ActionPayload', (p) => {
+    socket.on('action', (p) => {
+        changeGameState(p)
         socket.emit('GameStatePayload', new GameStatePayload(game))
     })
     socket.on('disconnect', () => {
         delete SOCKET_LIST[socket.id]
     })
 });
+
+function changeGameState(actionPayload) {
+    const id = actionPayload.id
+    switch(actionPayload.intent) {
+        case "income": handleCoinsChange(id, 1); break;
+        case "foreign": handleCoinsChange(id, 2); break;
+        case "coup": handleCoinsChange(id, -7); break;
+        case "tax": handleCoinsChange(id, 3); break;
+        case "steal": break;
+        case "assassinate": break;
+        case "exchange": break;
+        default: break;
+    }
+} 
+
+//add or remove coins by a certain amount
+function handleCoinsChange(id, amount) {
+    var player = game.players.find(p => p.id = id)
+    if (player) {
+        if (player.coins + amount < 0) {
+            console.log("Not enough coins")
+        } else if (player.coins >= 10 && amount > 0) {
+            console.log("Can't perform action (Over 10 coins, must Coup)")
+        } else {
+            player.coins += amount
+        }
+    }
+}
 
 var time = 100;
 setInterval(function() {

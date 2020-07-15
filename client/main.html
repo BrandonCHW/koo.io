@@ -85,8 +85,8 @@
 
         // Receive new game state updates
         var socket = io()
-        socket.on('GameStatePayload', (gameState) => {
-            console.log(gameState)
+        socket.on('GameStatePayload', (p) => {
+            updateView(p)
         })
 
         // Receive timer update (regularly updated)
@@ -94,8 +94,13 @@
             updateTimer(time)
         })
 
-        function updateView() {
-
+        function updateView(p) {
+            const p1 = p.gameState.players[0]
+            document.getElementById("pCoins").textContent = p1.coins
+            document.getElementById("pCard1Name").textContent = p1.firstCard
+            document.getElementById("pCard1Status").textContent = p1.firstCardStatus
+            document.getElementById("pCard2Name").textContent = p1.secondCard
+            document.getElementById("pCard1Status").textContent = p1.secondCardStatus
         }
 
         function updateTimer(time) {
@@ -115,16 +120,16 @@
         var temp2Money = 0; //ChimpUnleashed
 
         var income = $("#income").on("click", function() {
-            changeCoins(1) 
+            socket.emit('action', new ActionPayload("income"))
         })
         var foreign = $("#foreign").on("click", function() {
-            changeCoins(2)
+            socket.emit('action', new ActionPayload("foreign"))
         })
         var coup = $("#coup").on("click", function() {
-            changeCoins(-7)
+            socket.emit('action', new ActionPayload("coup"))
         })
         var tax = $("#tax").on("click", function() {
-            changeCoins(3)
+            socket.emit('action', new ActionPayload("tax"))
         })
         var steal = $("#steal").on("click", function() {
             changeCoins(2)
@@ -135,18 +140,6 @@
         })
         var exchange = $("#exchange").on("click", function() {
         })
-
-        //add or remove coins by a certain amount (number)
-        function changeCoins(amount) {
-            if (money + amount < 0) {
-                console.log("Not enough coins")
-            } else if (money >= 10 && amount > 0) {
-                alert("Can't perform action (Over 10 coins, must Coup)")
-            } else {
-                money += amount
-                $("#pCoins").text(money.toString())
-            }
-        }
 
         //Declares the intention (String)
         function declareIntention(intention) {
@@ -159,7 +152,7 @@
             console.log("selected player", $(identifier).text());
             $("#playerSelector").css("display","none")
 
-            socket.emit('ActionPayload', 
+            socket.emit('action', 
                 new ActionPayload("player", $("#intention").text(), $(identifier).text()))
         }
 
