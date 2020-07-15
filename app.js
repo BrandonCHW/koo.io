@@ -61,7 +61,7 @@ io.on('connection', (socket) => {
     socket.join('room1')
 
     //send initial game state + player's id 
-    socket.emit('GameStatePayload', new GameStatePayload(game))
+    socket.to('room1').emit('GameStatePayload', new GameStatePayload(game))
 
     socket.on('action', (p) => {
         changeGameState(p)
