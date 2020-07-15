@@ -83,7 +83,6 @@
         //     console.log(btn.target.id)
         // })
 
-        // Receive new game state updates
         var socket = io()
         
         socket.on('connect',  () => {
@@ -91,13 +90,13 @@
         })
 
         // called whenever the game state changes (new connection, action)
-        socket.on('state change', (p) => {
-            // updateSelfView(p)
+        socket.on('state change', (state) => {
+            updaterOtherPlayersView(state)
         })
 
         // called when the player bitconnects to the game
-        socket.on('self connection', (initialState) => {
-            updateSelfView(initialState)
+        socket.on('self connection', (p) => {
+            updatePlayerStatus(p)
         })
 
         // Receive timer update (regularly updated)
@@ -105,12 +104,18 @@
             updateTimer(time)
         })
 
-        function updateSelfView(p) {
+        //Updates the 'player status' 
+        function updatePlayerStatus(p) {
             $("#pCoins").text(p.coins)
             $("#pCard1Name").text(p.firstCard)
             $("#pCard1Status").text(p.firstCardStatus)
             $("#pCard2Name").text(p.secondCard)
             $("#pCard1Status").text(p.secondCardStatus)
+        }
+
+        //Updates the 'other players'
+        function updateOtherPlayersView(gameState) {
+            
         }
 
         function updateTimer(time) {
