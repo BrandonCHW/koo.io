@@ -61,15 +61,16 @@ io.on('connection', (socket) => {
     socket.join('room1')
 
     //send initial game state + player's id 
-    socket.to('room1').emit('GameStatePayload', new GameStatePayload(game))
+    socket.to('room1').emit('state change', new GameStatePayload(game))
 
     socket.on('action', (p) => {
         changeGameState(p)
         // send new game state
-        socket.emit('GameStatePayload', new GameStatePayload(game))
+        socket.emit('state change', new GameStatePayload(game))
     })
     socket.on('disconnect', () => {
         delete SOCKET_LIST[socket.id]
+        socket.emit('state change')
     })
 });
 

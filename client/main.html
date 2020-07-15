@@ -85,7 +85,7 @@
 
         // Receive new game state updates
         var socket = io()
-        socket.on('GameStatePayload', (p) => {
+        socket.on('state change', (p) => {
             updateView(p)
         })
 
