@@ -30,6 +30,9 @@
         <p>Credits: Bred and Chimp, inspired by Rikki Rahta's Coup Original recipe nice</p>
     </div>
 
+    <div>
+        <p>Timer: <span id="roundTimer"></span></p>
+    </div>
     <!-- Other players data -->
     <div>
         <h1>Other Players</h1>
@@ -75,8 +78,15 @@
 
             var socket = io()
             socket.on('GameStatePayload', (p) => {
-                console.log(p)
             })
+
+            socket.on('timer', (time) => {
+                updateView(time)
+            })
+
+            function updateView(time) {
+                var timer = document.getElementById("roundTimer").textContent = time
+            }
 
             class ActionPayload { 
                 constructor(intent, to="") {
@@ -92,31 +102,24 @@
 
             var income = $("#income").on("click", function() {
                 changeCoins(1) 
-                console.log("income")
             })
             var foreign = $("#foreign").on("click", function() {
                 changeCoins(2)
-                console.log("foreign")
             })
             var coup = $("#coup").on("click", function() {
                 changeCoins(-7)
-                console.log("coup")
             })
             var tax = $("#tax").on("click", function() {
                 changeCoins(3)
-                console.log("tax")
             })
             var steal = $("#steal").on("click", function() {
                 changeCoins(2)
                 declareIntention("steal")
-                console.log("steal")
             })
             var assassinate = $("#assassinate").on("click", function() {
-                console.log("assassinate")
                 declareIntention("assassinate")
             })
             var exchange = $("#exchange").on("click", function() {
-                console.log("exchange")
             })
 
             //add or remove coins by a certain amount (number)

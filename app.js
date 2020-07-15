@@ -14,6 +14,13 @@ const SOCKET_LIST = {}
 class GameStatePayload {
     constructor() {
         this.message = "hello"
+        this.roundTime = 4;
+    }
+}
+
+class GameState {
+    constructor() {
+        this.players = []
     }
 }
 
@@ -36,7 +43,13 @@ http.listen(PORT, () => {
     console.log(`Listening on port ${PORT}`)
 });
 
+var time = 100;
+
 setInterval(function() {
     // console.log("hello")
-    
+    for(var i in SOCKET_LIST) {
+        var socket = SOCKET_LIST[i]
+        socket.emit('timer', time)
+    }
+    time--
 },1000)
