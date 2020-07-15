@@ -114,5 +114,6 @@ setInterval(function() {
         var socket = SOCKET_LIST[i]
         socket.emit('timer', time)
     }
-    time--
+    if (time > 0)
+        time--
 },1000)
