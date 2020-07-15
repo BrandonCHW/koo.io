@@ -2,37 +2,15 @@ const express = require('express')
 const app = express()
 const http = require('http').createServer(app)
 const io = require('socket.io')(http)
+const path = require('path')
 
 const PORT = 3000
 
+///////////////////////
+/*****  ROUTING ******/
+///////////////////////
 app.get("/", (req,res) => {
     res.sendFile(__dirname + "/client/main.html")
-});
-
-const SOCKET_LIST = {}
-
-class GameStatePayload {
-    constructor() {
-        this.message = "hello"
-        this.roundTime = 4;
-    }
-}
-
-class GameState {
-    constructor() {
-        this.players = []
-    }
-}
-
-io.on('connection', (socket) => {
-    SOCKET_LIST[socket.id] = socket
-    socket.on('ActionPayload', (p) => {
-        console.log('received')
-        socket.emit('GameStatePayload', new GameStatePayload())
-    })
-    socket.on('disconnect', () => {
-        delete SOCKET_LIST[socket.id]
-    })
 });
 
 app.get("*", (req,res) => {
@@ -43,10 +21,56 @@ http.listen(PORT, () => {
     console.log(`Listening on port ${PORT}`)
 });
 
-var time = 100;
+///////////////////////////////////
+/*****  GAMEPLAY MANAGEMENT ******/
+///////////////////////////////////
+const SOCKET_LIST = {}
 
+// may not need this
+class GameStatePayload {
+    constructor(gameState) {
+        this.gameState = gameState
+    }
+}
+
+class GameState {
+    constructor() {
+        this.players = []
+        this.turn
+    }
+}
+
+class Player {
+    constructor(id) {
+        // this.id = id
+        this.coins = 0
+        this.firstCard = "Hero1"
+        this.firstCardStatus = "Alive"
+        this.secondCard= "Hero2"
+        this.secondCardStatus = "Alive"
+    }
+}
+
+// Create new game (only 1 lobby)
+var game = new GameState()
+
+io.on('connection', (socket) => {
+    SOCKET_LIST[socket.id] = socket
+    game.players.push(new Player(socket.id))
+
+    //send initial game state 
+    socket.emit('GameStatePayload', new GameStatePayload(game))
+
+    socket.on('ActionPayload', (p) => {
+        socket.emit('GameStatePayload', new GameStatePayload(game))
+    })
+    socket.on('disconnect', () => {
+        delete SOCKET_LIST[socket.id]
+    })
+});
+
+var time = 100;
 setInterval(function() {
-    // console.log("hello")
     for(var i in SOCKET_LIST) {
         var socket = SOCKET_LIST[i]
         socket.emit('timer', time)
