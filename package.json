@@ -6,7 +6,7 @@
   "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "sass": "node-sass --watch client/scss -o client",
+    "sass": "node-sass --watch client/scss -o client/public",
     "start": "node app.js"
   },
   "repository": {
