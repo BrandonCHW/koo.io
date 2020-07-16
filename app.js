@@ -2,7 +2,6 @@ const express = require('express')
 const app = express()
 const http = require('http').createServer(app)
 const io = require('socket.io')(http)
-const path = require('path')
 
 const PORT = 3000
 
@@ -84,7 +83,7 @@ io.on('connection', (socket) => {
     var initialState = game.players[socket.id]
     io.to(socket.id).emit('self connection', initialState)   
 
-    //TODO notify other players of new connection
+    // notify other players of new connection
     io.to('room1').emit('state change', new GameStatePayload(game))
 
     socket.on('action', (p) => {
@@ -95,7 +94,8 @@ io.on('connection', (socket) => {
     socket.on('disconnect', () => {
         delete SOCKET_LIST[socket.id]
         game.onDisconnect(socket.id)
-        //TODO notify other players of disconnection
+
+        //notify other players of disconnection
         io.to('room1').emit('state change', new GameStatePayload(game))
     })
 });
@@ -114,7 +114,7 @@ function changeGameState(actionPayload) {
     }
 } 
 
-//add or remove coins by a certain amount
+//add or remove coins by a certain amount (amount can be negative)
 function handleCoinChange(id, amount) {
     var player = game.players[id]
     if (player) {
