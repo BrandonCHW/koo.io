@@ -2,7 +2,7 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <!-- <script type="text/javascript" src="listeners.js"></script> -->
+        <script type="text/javascript" src="/core.js"></script>
         <script type="text/javascript" src="/socket.io/socket.io.js"></script>
         <title>Koo.io</title>
         <!-- jQuery JS (required for Bootstrap)-->
@@ -72,29 +72,37 @@
             <p>Card 1: <span id="pCard1Name">card1</span>; Status: <span id="pCard1Status">Alive</span></p>
             <p>Card 2: <span id="pCard2Name">card2</span>; Status: <span id="pCard2Status">Alive</span></p>
         </div>
-            
-        <!-- Player actions -->
-        <div id="actions">
-            <h4>Generic</h4>
-            <div>
-                <button id="income">Income: +1 Coin</button>
-                <button id="foreign">Foreign: +2 Coin</button>
-                <button id="coup">Coup: -7 Coins</button>
-            </div>
-            <h4>Special Action</h4>
-            <div>
-                <button id="tax">Tax: +3 Coins</button>
-                <button id="steal">Steal: Yoink (+2 coins)</button>
-                <button id="assassinate">Assassinate: Kill (-3 Coins)</button>
-                <button id="exchange">Exchange: Take 2 cards, keep 1</button>
-            </div>
-    
-            <div id="playerSelector" style="display: none;">
-                <h4>Intention: <span id="intention">lemheurdheur</span></h4>
-                <button onclick="selectPlayer(this)">cartemere</button>
-                <button onclick="selectPlayer(this)">ChimpUnleashed</button>
-            </div>
-    
+        <p>Credits: Bred and Chimp, inspired by Rikki Rahta's Coup Original recipe nice</p>
+    </div>
+
+    <div>
+        <p>Timer: <span id="roundTimer"></span></p>
+    </div>
+    <!-- Other players data -->
+    <div id="otherPlayers">
+        <h1>Other Players</h1>
+        <div>
+            <p>Should not see this</p>
+        </div>
+    </div>
+
+    <!-- Current player data -->
+    <div>
+        <h1>Player status</h1>
+        <p>My name: <span id="playerName">Chimp</span></p>
+        <p>Player Coins: <span id="pCoins">0</span></p>
+        <p>Card 1: <span id="pCard1Name">card1</span>; Status: <span id="pCard1Status">Alive</span></p>
+        <p>Card 2: <span id="pCard2Name">card2</span>; Status: <span id="pCard2Status">Alive</span></p>
+        
+    </div>
+        
+    <!-- Player actions -->
+    <div id="actions">
+        <h4>Generic</h4>
+        <div>
+            <button id="income">Income: +1 Coin</button>
+            <button id="foreign">Foreign: +2 Coin</button>
+            <button id="coup">Coup: -7 Coins</button>
         </div>
     
         <!-- Card Select (Exchange) -->
@@ -107,95 +115,16 @@
 
         <div id="playerSelector" style="display: none;">
             <h4>Intention: <span id="intention">lemheurdheur</span></h4>
-            <button onclick="selectPlayer(this)">cartemere</button>
-            <button onclick="selectPlayer(this)">ChimpUnleashed</button>
+            <div>
+                <button>you shouldn't see this</button>
+            </div>
         </div>
 
     </div>
 
-    <!-- Card Select (Exchange) -->
+    <!-- Card Select (Assassinate, Exchange) -->
     <div>
-
+        <h4>Choose a card to</h4>
     </div>    
-
-    <script>
-        // var a = $("div[id='actions'] div button").on("click", function(btn) {
-        //     console.log(btn.target.id)
-        // })
-
-        // Receive new game state updates
-        var socket = io()
-        socket.on('state change', (p) => {
-            // updateSelfView(p)
-        })
-
-        // called when the player bitconnects to the lobby
-        socket.on('self connection', (initialState) => {
-            updateSelfView(initialState)
-        })
-
-        // Receive timer update (regularly updated)
-        socket.on('timer', (time) => {
-            updateTimer(time)
-        })
-
-        function updateSelfView(p) {
-            $("#pCoins").text(p.coins)
-            $("#pCard1Name").text(p.firstCard)
-            $("#pCard1Status").text(p.firstCardStatus)
-            $("#pCard2Name").text(p.secondCard)
-            $("#pCard1Status").text(p.secondCardStatus)
-        }
-
-        function updateTimer(time) {
-            var timer = document.getElementById("roundTimer").textContent = time
-        }
-
-        class ActionPayload { 
-            constructor(intent, to="") {
-                this.id = socket.id
-                this.intent = intent
-                this.to = to
-            }
-        }
-
-        var income = $("#income").on("click", function() {
-            socket.emit('action', new ActionPayload("income"))
-        })
-        var foreign = $("#foreign").on("click", function() {
-            socket.emit('action', new ActionPayload("foreign"))
-        })
-        var coup = $("#coup").on("click", function() {
-            socket.emit('action', new ActionPayload("coup"))
-        })
-        var tax = $("#tax").on("click", function() {
-            socket.emit('action', new ActionPayload("tax"))
-        })
-        var steal = $("#steal").on("click", function() {
-            changeCoins(2)
-            declareIntention("steal")
-        })
-        var assassinate = $("#assassinate").on("click", function() {
-            declareIntention("assassinate")
-        })
-        var exchange = $("#exchange").on("click", function() {
-        })
-
-        //Declares the intention (String)
-        function declareIntention(intention) {
-            $("#playerSelector").css("display","block")
-            $("#intention").text(intention)
-        }
-
-        //choose a player (steal, assassinate)
-        function selectPlayer(identifier) {
-            console.log("selected player", $(identifier).text());
-            $("#playerSelector").css("display","none")
-
-            socket.emit('action', 
-                new ActionPayload("player", $("#intention").text(), $(identifier).text()))
-        }
-
-    </script>
 </body>
 </html>
