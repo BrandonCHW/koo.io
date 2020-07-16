@@ -51,10 +51,30 @@ class GameStatePayload {
 class GameState {
     constructor() {
         this.players = {}
+        this.deck = this.shuffle(this.fillDeck())
+        console.log(this.deck)
     }
 
     onDisconnect(id) {
         delete this.players[id]
+    }
+
+    fillDeck() {
+        return [
+            "Duke","Duke","Duke",
+            "Assassin","Assassin","Assassin",
+            "Captain","Captain","Captain",
+            "Ambassador","Ambassador","Ambassador",
+            "Contessa","Contessa","Contessa"
+        ]
+    }
+
+    shuffle(a) {
+        for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+            [a[i], a[j]] = [a[j], a[i]];
+        }
+        return a;
     }
 }
 
