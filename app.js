@@ -13,6 +13,8 @@ app.get("/", (req,res) => {
     res.sendFile(__dirname + "/client/main.html")
 });
 
+app.use(express.static("client"))
+
 app.get("*", (req,res) => {
     res.send("Error")
 });
