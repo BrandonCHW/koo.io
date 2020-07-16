@@ -69,8 +69,9 @@
 
         <div id="playerSelector" style="display: none;">
             <h4>Intention: <span id="intention">lemheurdheur</span></h4>
-            <button onclick="selectPlayer(this)">cartemere</button>
-            <button onclick="selectPlayer(this)">ChimpUnleashed</button>
+            <div>
+                <button>you shouldn't see this</button>
+            </div>
         </div>
 
     </div>
@@ -94,7 +95,9 @@
 
         // called whenever the game state changes (new connection, action)
         socket.on('state change', (payload) => {
+            console.log('state changes')
             updateOtherPlayersView(payload)
+            updatePlayerStatus(payload.gameState.players[playerId])
         })
         
         // called when the player bitconnects to the game
@@ -127,8 +130,9 @@
                 }, {})
             
             var otherSection = $("#otherPlayers > div")
+            var playerSelector = $("#playerSelector > div")
             otherSection.empty()
-            console.log(otherPlayers)
+            playerSelector.empty()
             for(const id in otherPlayers) {
                 const other = otherPlayers[id]
                 otherSection.append(`<p>Name: ${other.name} 
@@ -137,6 +141,9 @@
                     Card2: ${other.secondCard} 
                     StatusCard2: ${other.secondCardStatus}; 
                     Coins: ${other.coins}</p>`)
+
+                playerSelector.append(`<button onclick="selectPlayer(this)">${other.name}</button>`)
+                // playerSelector.append(`<button>hello</button>`)
             }
         }
 
@@ -165,7 +172,6 @@
             socket.emit('action', new ActionPayload("tax"))
         })
         var steal = $("#steal").on("click", function() {
-            changeCoins(2)
             declareIntention("steal")
         })
         var assassinate = $("#assassinate").on("click", function() {
@@ -181,12 +187,12 @@
         }
 
         //choose a player (steal, assassinate)
-        function selectPlayer(identifier) {
-            console.log("selected player", $(identifier).text());
+        function selectPlayer(name) {
+            console.log("selected player", $(name).text());
             $("#playerSelector").css("display","none")
 
             socket.emit('action', 
-                new ActionPayload("player", $("#intention").text(), $(identifier).text()))
+                new ActionPayload("player", $("#intention").text(), $(name).text()))
         }
 
     </script>

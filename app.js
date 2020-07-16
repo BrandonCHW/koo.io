@@ -87,7 +87,7 @@ io.on('connection', (socket) => {
 function changeGameState(actionPayload) {
     const id = actionPayload.id
     switch(actionPayload.intent) {
-        case "income": console.log('INCOME'); handleCoinChange(id, 1); break;
+        case "income": handleCoinChange(id, 1); break;
         case "foreign": handleCoinChange(id, 2); break;
         case "coup": handleCoinChange(id, -7); break;
         case "tax": handleCoinChange(id, 3); break;
@@ -118,8 +118,8 @@ function handleSteal(id, to) {
     var actor = game.players[id]
     var victim = game.players[to]
 
-    if (actor.coins > 10 || victim.coins < 2) {
-        console.log("Can't touch this")
+    if (actor.coins > 10 || victim.coins < 1) {
+        console.log("Actor has too many coins, or victim has too few coins")
         return
     }
     if (actor && victim) {
