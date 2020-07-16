@@ -185,11 +185,10 @@
         }
 
         //choose a player (steal, assassinate)
-        function selectPlayer(name) {
+        function selectPlayer(elem) {
             $("#playerSelector").css("display","none")
-
             socket.emit('action', 
-                new ActionPayload("player", $("#intention").text(), $(name).text()))
+                new ActionPayload($("#intention").text(), $(elem).text()))
         }
 
     </script>

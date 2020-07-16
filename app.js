@@ -46,7 +46,7 @@ class GameState {
 class Player {
     constructor(id) {
         this.name = parseInt(Math.ceil(Math.random()*100)) // random number for now
-        this.coins = 0
+        this.coins = 2
         this.firstCard = "Hero1"
         this.firstCardStatus = "Alive"
         this.secondCard= "Hero2"
@@ -91,7 +91,7 @@ function changeGameState(actionPayload) {
         case "foreign": handleCoinChange(id, 2); break;
         case "coup": handleCoinChange(id, -7); break;
         case "tax": handleCoinChange(id, 3); break;
-        case "steal": handleSteal(id, actionPayload.to);
+        case "steal": handleSteal(id, actionPayload.to); break;
         case "assassinate": break;
         case "exchange": break;
         default: break;
@@ -116,7 +116,7 @@ function handleCoinChange(id, amount) {
 
 function handleSteal(id, to) {
     var actor = game.players[id]
-    var victim = game.players[to]
+    var victim = game.players[findPlayerIdByName(to)]
 
     if (actor.coins > 10 || victim.coins < 1) {
         console.log("Actor has too many coins, or victim has too few coins")
@@ -125,7 +125,11 @@ function handleSteal(id, to) {
     if (actor && victim) {
         victim.coins -= 2
         actor.coins += 2
-    }
+    } 
+}
+
+function findPlayerIdByName(name) {
+    return Object.keys(game.players).find(key => game.players[key].name.toString() === name)
 }
 
 var time = 100;
