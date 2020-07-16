@@ -34,15 +34,17 @@
         <p>Timer: <span id="roundTimer"></span></p>
     </div>
     <!-- Other players data -->
-    <div>
+    <div id="otherPlayers">
         <h1>Other Players</h1>
-        <p>cartemere Card 1:<span id="temp1Card1">?</span> Card 2:<span id="temp1Card2">?</span> Coins:<span id="temp1Coins">0</span> </p>
-        <p>ChimpUnleashed Card1:<span id="temp2Card1">?</span> Card 2:<span id="temp2Card2">?</span> Coins:<span id="temp2Coins">0</span> </p>
+        <div>
+            <p>Should not see this</p>
+        </div>
     </div>
 
     <!-- Current player data -->
     <div>
         <h1>Player status</h1>
+        <p>My name: <span id="playerName">Chimp</span></p>
         <p>Player Coins: <span id="pCoins">0</span></p>
         <p>Card 1: <span id="pCard1Name">card1</span>; Status: <span id="pCard1Status">Alive</span></p>
         <p>Card 2: <span id="pCard2Name">card2</span>; Status: <span id="pCard2Status">Alive</span></p>
@@ -85,15 +87,16 @@
 
         var socket = io()
         
+        var playerId = ""
         socket.on('connect',  () => {
-            console.log(socket.id)
+            playerId = socket.id
         })
 
         // called whenever the game state changes (new connection, action)
-        socket.on('state change', (state) => {
-            updaterOtherPlayersView(state)
+        socket.on('state change', (payload) => {
+            updateOtherPlayersView(payload)
         })
-
+        
         // called when the player bitconnects to the game
         socket.on('self connection', (p) => {
             updatePlayerStatus(p)
@@ -106,6 +109,7 @@
 
         //Updates the 'player status' 
         function updatePlayerStatus(p) {
+            $("#playerName").text(p.name)
             $("#pCoins").text(p.coins)
             $("#pCard1Name").text(p.firstCard)
             $("#pCard1Status").text(p.firstCardStatus)
@@ -114,8 +118,26 @@
         }
 
         //Updates the 'other players'
-        function updateOtherPlayersView(gameState) {
+        function updateOtherPlayersView(payload) {
+            var otherPlayers = Object.keys(payload.gameState.players)
+                .filter(key => key != playerId)
+                .reduce((obj, key) => {
+                    obj[key] = payload.gameState.players[key]
+                    return obj
+                }, {})
             
+            var otherSection = $("#otherPlayers>div")
+            otherSection.empty()
+            console.log(otherPlayers)
+            for(const id in otherPlayers) {
+                const other = otherPlayers[id]
+                otherSection.append(`<p>Name: ${other.name} 
+                    Card1: ${other.firstCard}, 
+                    StatusCard1: ${other.firstCardStatus}; 
+                    Card2: ${other.secondCard} 
+                    StatusCard2: ${other.secondCardStatus}; 
+                    Coins: ${other.coins}</p>`)
+            }
         }
 
         function updateTimer(time) {

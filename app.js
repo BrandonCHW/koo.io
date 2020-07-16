@@ -40,12 +40,12 @@ class GameState {
 
     onDisconnect(id) {
         delete this.players[id]
-        console.log(this)
     }
 }
 
 class Player {
     constructor(id) {
+        this.name = parseInt(Math.ceil(Math.random()*100)) // random number for now
         this.coins = 0
         this.firstCard = "Hero1"
         this.firstCardStatus = "Alive"
@@ -63,7 +63,6 @@ io.on('connection', (socket) => {
 
     // a single lobby 
     socket.join('room1')
-    console.log(game)
 
     //send player identity
     var initialState = game.players[socket.id]
@@ -75,12 +74,13 @@ io.on('connection', (socket) => {
     socket.on('action', (p) => {
         changeGameState(p)
         // send new game state
-        socket.to('room1').emit('state change', new GameStatePayload(game))
+        io.to('room1').emit('state change', new GameStatePayload(game))
     })
     socket.on('disconnect', () => {
         delete SOCKET_LIST[socket.id]
         game.onDisconnect(socket.id)
         //TODO notify other players of disconnection
+        io.to('room1').emit('state change', new GameStatePayload(game))
     })
 });
 
