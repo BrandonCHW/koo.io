@@ -92,7 +92,7 @@ function changeGameState(actionPayload) {
         case "coup": handleCoinChange(id, -7); break;
         case "tax": handleCoinChange(id, 3); break;
         case "steal": handleSteal(id, actionPayload.to); break;
-        case "assassinate": break;
+        case "assassinate": handleAssassinate(actionPayload.to); break;
         case "exchange": break;
         default: break;
     }
@@ -126,6 +126,10 @@ function handleSteal(id, to) {
         victim.coins -= 2
         actor.coins += 2
     } 
+}
+
+function handleAssassinate(to) {
+    
 }
 
 function findPlayerIdByName(name) {

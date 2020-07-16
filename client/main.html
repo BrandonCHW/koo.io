@@ -180,7 +180,11 @@
 
         //Declares the intention (String)
         function declareIntention(intention) {
-            $("#playerSelector").css("display","block")
+            if ($("#playerSelector").css("display") === "block") {
+                $("#playerSelector").css("display","none")
+            } else {
+                $("#playerSelector").css("display","block")
+            }
             $("#intention").text(intention)
         }
 
