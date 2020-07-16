@@ -48,11 +48,11 @@ window.onload = () => {
         playerSelector.empty()
         for(const id in otherPlayers) {
             const other = otherPlayers[id]
-            otherSection.append(`<p>Name: ${other.name} 
+            otherSection.append(`<p>Turn: ${other.turn}; Name: ${other.name}; 
                 Card1: ${other.firstCard}, 
-                StatusCard1: ${other.firstCardStatus}; 
+                Card1Alive: ${other.firstCardAlive}; 
                 Card2: ${other.secondCard} 
-                StatusCard2: ${other.secondCardStatus}; 
+                Card2Alive: ${other.secondCardAlive}; 
                 Coins: ${other.coins}</p>`)
 
             playerSelector.append(`<button class="playerSel">${other.name}</button>`)

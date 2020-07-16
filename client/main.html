@@ -70,6 +70,7 @@
         <!-- Current player data -->
         <div>
             <h1>Player status</h1>
+            <hp>My Turn: <span id="myTurn">No</p>
             <p>My name: <span id="playerName">Chimp</span></p>
             <p>Player Coins: <span id="pCoins">0</span></p>
             <p>Card 1: <span id="pCard1Name">card1</span>; Status: <span id="pCard1Status">Alive</span></p>
@@ -86,7 +87,6 @@
                 <button id="coup">Coup: -7 Coins</button>
             </div>
         
-            <!-- Card Select (Exchange) -->
             <div>
                 <button id="tax">Tax: +3 Coins</button>
                 <button id="steal">Steal: Yoink (+2 coins)</button>
@@ -104,8 +104,8 @@
         </div>
 
         <!-- Card Select (Assassinate, Exchange) -->
-        <div id="cardSelect">
-            <h4 style="display: none;">Choose a card to <span></span></h4>
+        <div id="cardSelect"style="display: block;">
+            <h4>Choose a card to <span>sacrifice</span></h4>
         </div>    
     </body> 
 </html>

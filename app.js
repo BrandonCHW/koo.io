@@ -82,9 +82,9 @@ class Player {
         this.name = parseInt(Math.ceil(Math.random()*100)) // random number for now
         this.coins = 2
         this.firstCard = "Hero1"
-        this.firstCardStatus = "Alive"
+        this.firstCardAlive = true
         this.secondCard= "Hero2"
-        this.secondCardStatus = "Alive"
+        this.secondCardAlive = true
     }
 }
 
@@ -164,7 +164,15 @@ function handleSteal(id, to) {
 }
 
 function handleAssassinate(to) {
+    var victim = game.players[findPlayerIdByName(to)]
     
+    if (victim) {
+        if (victim.firstCardAlive) {
+            victim.firstCardAlive = false
+        } else if (victim.secondCardAlive) {
+            victim.secondCardAlive = false
+        }
+    }
 }
 
 function findPlayerIdByName(name) {
