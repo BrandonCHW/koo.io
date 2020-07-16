@@ -128,7 +128,6 @@ function handleSteal(id, to) {
         victim.coins -= 2
         actor.coins += 2
     } 
-    console.log("steal successful")
 }
 
 function handleAssassinate(to) {
