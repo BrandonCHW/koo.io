@@ -1,9 +1,5 @@
 
 window.onload = () => {
-    // var a = $("div[id='actions'] div button").on("click", function(btn) {
-    //     console.log(btn.target.id)
-    // })
-
     var socket = io()
     
     var playerId = ""
