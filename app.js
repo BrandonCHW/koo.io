@@ -115,8 +115,16 @@ function handleCoinChange(id, amount) {
 }
 
 function handleSteal(id, to) {
-    var player = game.players[id]
-    if (player) {
+    var actor = game.players[id]
+    var victim = game.players[to]
+
+    if (actor.coins > 10 || victim.coins < 2) {
+        console.log("Can't touch this")
+        return
+    }
+    if (actor && victim) {
+        victim.coins -= 2
+        actor.coins += 2
     }
 }
 
