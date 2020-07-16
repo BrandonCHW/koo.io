@@ -95,7 +95,6 @@
 
         // called whenever the game state changes (new connection, action)
         socket.on('state change', (payload) => {
-            console.log('state changes')
             updateOtherPlayersView(payload)
             updatePlayerStatus(payload.gameState.players[playerId])
         })
@@ -143,7 +142,6 @@
                     Coins: ${other.coins}</p>`)
 
                 playerSelector.append(`<button onclick="selectPlayer(this)">${other.name}</button>`)
-                // playerSelector.append(`<button>hello</button>`)
             }
         }
 
@@ -188,7 +186,6 @@
 
         //choose a player (steal, assassinate)
         function selectPlayer(name) {
-            console.log("selected player", $(name).text());
             $("#playerSelector").css("display","none")
 
             socket.emit('action', 
