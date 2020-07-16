@@ -59,8 +59,11 @@ window.onload = () => {
                 StatusCard2: ${other.secondCardStatus}; 
                 Coins: ${other.coins}</p>`)
 
-            playerSelector.append(`<button onclick="selectPlayer(this)">${other.name}</button>`)
+            playerSelector.append(`<button class="playerSel">${other.name}</button>`)
         }
+
+        // Event listener for player select buttons
+        $(".playerSel").on("click", (event) => selectPlayer(event.target.textContent))
     }
 
     function updateTimer(time) { 
@@ -107,9 +110,9 @@ window.onload = () => {
     }
 
     //choose a player (steal, assassinate)
-    function selectPlayer(elem) {
+    function selectPlayer(name) {
         $("#playerSelector").css("display","none")
         socket.emit('action', 
-            new ActionPayload($("#intention").text(), $(elem).text()))
+            new ActionPayload($("#intention").text(), name))
     }
 }
