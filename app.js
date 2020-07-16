@@ -52,7 +52,6 @@ class GameState {
     constructor() {
         this.players = {}
         this.deck = this.shuffle(this.fillDeck())
-        console.log(this.deck)
     }
 
     onDisconnect(id) {
