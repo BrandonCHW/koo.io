@@ -7,8 +7,10 @@ window.onload = () => {
         playerId = socket.id
     })
 
-    // called whenever the game state changes (new connection, action)
+    // called whenever the game state changes (new connection, action, next turn)
     socket.on('state change', (payload) => {
+        $("#turn").text(payload.gameState.turn)
+        console.log(payload)
         updateOtherPlayersView(payload)
         updatePlayerStatus(payload.gameState.players[playerId])
     })
@@ -18,7 +20,7 @@ window.onload = () => {
         updatePlayerStatus(p)
     })
 
-    // Receive timer update (regularly updated)
+    // Receive timer update (periodically updated)
     socket.on('timer', (time) => {
         updateTimer(time)
     })
@@ -48,7 +50,7 @@ window.onload = () => {
         playerSelector.empty()
         for(const id in otherPlayers) {
             const other = otherPlayers[id]
-            otherSection.append(`<p>Turn: ${other.turn}; Name: ${other.name}; 
+            otherSection.append(`<p>Turn: ${payload.gameState.turn}; Name: ${other.name}; 
                 Card1: ${other.firstCard} 
                 (${other.firstCardAlive}); 
                 Card2: ${other.secondCard} 
@@ -95,8 +97,9 @@ window.onload = () => {
     var exchange = $("#exchange").on("click", function() {
     })
 
-    var dealCards = $("#dealCards").on("click", function() {
-        socket.emit('deal cards')
+    //TODO remove this later
+    var startGame = $("#startGame").on("click", function() {
+        socket.emit('start game')
     })
 
     //Declares the intention (String)

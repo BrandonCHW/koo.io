@@ -51,11 +51,18 @@ class GameStatePayload {
 class GameState {
     constructor() {
         this.players = {}
-        this.deck = this.fillDeck()
+        this.deck = []
+        this.turn = ""
     }
 
     onDisconnect(id) {
         delete this.players[id]
+    }
+
+    onBegin() {
+        this.deck = this.shuffle(this.fillDeck())
+        this.dealCards()
+        this.turn = this.players[Object.keys(this.players)[0]].name //the first player that connected begins...
     }
 
     fillDeck() {
@@ -132,9 +139,9 @@ io.on('connection', (socket) => {
     })
 
     //temporary
-    socket.on('deal cards', () => {
+    socket.on('start game', () => {
         console.log('start game!')
-        game.dealCards()        
+        game.onBegin()
         io.to('room1').emit('state change', new GameStatePayload(game))
     })
 });
