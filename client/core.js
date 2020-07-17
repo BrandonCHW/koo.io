@@ -28,9 +28,9 @@ window.onload = () => {
         $("#playerName").text(p.name)
         $("#pCoins").text(p.coins)
         $("#pCard1Name").text(p.firstCard)
-        $("#pCard1Status").text(p.firstCardStatus)
+        $("#pCard1Alive").text(p.firstCardAlive)
         $("#pCard2Name").text(p.secondCard)
-        $("#pCard1Status").text(p.secondCardStatus)
+        $("#pCard2Alive").text(p.secondCardAlive)
     }
 
     //Updates the 'other players'
@@ -49,10 +49,10 @@ window.onload = () => {
         for(const id in otherPlayers) {
             const other = otherPlayers[id]
             otherSection.append(`<p>Turn: ${other.turn}; Name: ${other.name}; 
-                Card1: ${other.firstCard}, 
-                Card1Alive: ${other.firstCardAlive}; 
+                Card1: ${other.firstCard} 
+                (${other.firstCardAlive}); 
                 Card2: ${other.secondCard} 
-                Card2Alive: ${other.secondCardAlive}; 
+                (${other.secondCardAlive}); 
                 Coins: ${other.coins}</p>`)
 
             playerSelector.append(`<button class="playerSel">${other.name}</button>`)

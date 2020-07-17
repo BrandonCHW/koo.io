@@ -80,7 +80,6 @@ class GameState {
     //Deals 2 cards to every player 
     dealCards() {
         this.shuffle(this.deck)      
-        if (this.deck.length > this.players.length)  
         for(var id in this.players) {
             var player = this.players[id] 
             player.firstCard = this.deck.pop()
