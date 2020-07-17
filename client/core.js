@@ -50,7 +50,7 @@ window.onload = () => {
         playerSelector.empty()
         for(const id in otherPlayers) {
             const other = otherPlayers[id]
-            otherSection.append(`<p>Turn: ${payload.gameState.turn}; Name: ${other.name}; 
+            otherSection.append(`<p>Name: ${other.name}; 
                 Card1: ${other.firstCard} 
                 (${other.firstCardAlive}); 
                 Card2: ${other.secondCard} 
@@ -60,7 +60,7 @@ window.onload = () => {
             playerSelector.append(`<button class="playerSel">${other.name}</button>`)
         }
 
-        // Event listener for player select buttons
+        // Event listener for player select buttons (TOOD Change target.textContent for a more secure id)
         $(".playerSel").on("click", (event) => selectPlayer(event.target.textContent))
     }
 
