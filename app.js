@@ -54,6 +54,7 @@ class GameState {
         this.deck = []
         this.turn = "" // name of the player who plays during this turn
         this.tracker = 0 // used to track the turn
+        this.inProgress = false // TODO temporary (can only next turn after game starts)
     }
 
     onDisconnect(id) {
@@ -64,11 +65,14 @@ class GameState {
         this.deck = this.shuffle(this.fillDeck())
         this.dealCards()
         this.turn = this.players[Object.keys(this.players)[this.tracker]].name //the first player that connected begins...
+        this.inProgress = true
     }
 
     nextTurn() {
-        this.tracker = ++this.tracker % Object.keys(this.players).length
-        this.turn = this.turn = this.players[Object.keys(this.players)[this.tracker]].name
+        if (this.inProgress) {
+            this.tracker = ++this.tracker % Object.keys(this.players).length
+            this.turn = this.turn = this.players[Object.keys(this.players)[this.tracker]].name
+        }
     }
 
     fillDeck() {
