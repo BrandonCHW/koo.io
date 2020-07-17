@@ -95,6 +95,10 @@ window.onload = () => {
     var exchange = $("#exchange").on("click", function() {
     })
 
+    var dealCards = $("#dealCards").on("click", function() {
+        socket.emit('deal cards')
+    })
+
     //Declares the intention (String)
     function declareIntention(intention) {
         if ($("#playerSelector").css("display") === "block") {

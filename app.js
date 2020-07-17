@@ -51,7 +51,7 @@ class GameStatePayload {
 class GameState {
     constructor() {
         this.players = {}
-        this.deck = this.shuffle(this.fillDeck())
+        this.deck = this.fillDeck()
     }
 
     onDisconnect(id) {
@@ -75,16 +75,30 @@ class GameState {
         }
         return a;
     }
+
+    //Move this in a service later
+    //Deals 2 cards to every player 
+    dealCards() {
+        this.shuffle(this.deck)      
+        if (this.deck.length > this.players.length)  
+        for(var id in this.players) {
+            var player = this.players[id] 
+            player.firstCard = this.deck.pop()
+            player.firstCardAlive = true
+            player.secondCard = this.deck.pop()
+            player.secondCardAlive = true
+        }
+    }
 }
 
 class Player {
     constructor(id) {
         this.name = parseInt(Math.ceil(Math.random()*100)) // random number for now
         this.coins = 2
-        this.firstCard = "Hero1"
-        this.firstCardAlive = true
-        this.secondCard= "Hero2"
-        this.secondCardAlive = true
+        this.firstCard = "card1"
+        this.firstCardAlive = false
+        this.secondCard= "card2"
+        this.secondCardAlive = false
     }
 }
 
@@ -117,7 +131,16 @@ io.on('connection', (socket) => {
         //notify other players of disconnection
         io.to('room1').emit('state change', new GameStatePayload(game))
     })
+
+    //temporary
+    socket.on('deal cards', () => {
+        console.log('start game!')
+        game.dealCards()        
+        io.to('room1').emit('state change', new GameStatePayload(game))
+    })
 });
+
+
 
 function changeGameState(actionPayload) {
     const id = actionPayload.id
