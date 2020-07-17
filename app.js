@@ -52,7 +52,8 @@ class GameState {
     constructor() {
         this.players = {}
         this.deck = []
-        this.turn = ""
+        this.turn = "" // name of the player who plays during this turn
+        this.tracker = 0 // used to track the turn
     }
 
     onDisconnect(id) {
@@ -62,7 +63,12 @@ class GameState {
     onBegin() {
         this.deck = this.shuffle(this.fillDeck())
         this.dealCards()
-        this.turn = this.players[Object.keys(this.players)[0]].name //the first player that connected begins...
+        this.turn = this.players[Object.keys(this.players)[this.tracker]].name //the first player that connected begins...
+    }
+
+    nextTurn() {
+        this.tracker = ++this.tracker % Object.keys(this.players).length
+        this.turn = this.turn = this.players[Object.keys(this.players)[this.tracker]].name
     }
 
     fillDeck() {
@@ -142,6 +148,10 @@ io.on('connection', (socket) => {
     socket.on('start game', () => {
         console.log('start game!')
         game.onBegin()
+        io.to('room1').emit('state change', new GameStatePayload(game))
+    })
+    socket.on('next turn', () => {
+        game.nextTurn()
         io.to('room1').emit('state change', new GameStatePayload(game))
     })
 });

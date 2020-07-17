@@ -102,6 +102,10 @@ window.onload = () => {
         socket.emit('start game')
     })
 
+    var nextTurn = $("#nextTurn").on("click", function() {
+        socket.emit('next turn')
+    })
+
     //Declares the intention (String)
     function declareIntention(intention) {
         if ($("#playerSelector").css("display") === "block") {
