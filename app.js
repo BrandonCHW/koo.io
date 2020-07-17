@@ -93,7 +93,7 @@ class GameState {
         return a;
     }
 
-    //Move this in a service later
+    //TODO Move this in a service later
     //Deals 2 cards to every player 
     dealCards() {
         this.shuffle(this.deck)      

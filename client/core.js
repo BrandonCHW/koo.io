@@ -10,7 +10,14 @@ window.onload = () => {
     // called whenever the game state changes (new connection, action, next turn)
     socket.on('state change', (payload) => {
         $("#turn").text(payload.gameState.turn)
-        console.log(payload)
+        console.log(payload.gameState.turn)
+        console.log(payload.gameState.players[playerId].name)
+        console.log(payload.gameState.turn != payload.gameState.players[playerId].name)
+        if (payload.gameState.turn != payload.gameState.players[playerId].name) {
+            $('#nextTurn').prop('disabled', true)
+        } else {
+            $('#nextTurn').prop('disabled', false)
+        }
         updateOtherPlayersView(payload)
         updatePlayerStatus(payload.gameState.players[playerId])
     })
@@ -78,7 +85,7 @@ window.onload = () => {
 
     var income = $("#income").on("click", function() {
         socket.emit('action', new ActionPayload("income"))
-    })
+    }) 
     var foreign = $("#foreign").on("click", function() {
         socket.emit('action', new ActionPayload("foreign"))
     })
