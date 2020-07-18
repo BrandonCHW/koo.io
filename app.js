@@ -87,7 +87,7 @@ class GameState {
 
     shuffle(a) {
         for (let i = a.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
+            const j = Math.floor(Math.random() * (i + 1));
             [a[i], a[j]] = [a[j], a[i]];
         }
         return a;
@@ -96,9 +96,8 @@ class GameState {
     //TODO Move this in a service later
     //Deals 2 cards to every player 
     dealCards() {
-        this.shuffle(this.deck)      
         for(var id in this.players) {
-            var player = this.players[id] 
+            var player = this.players[id]
             player.firstCard = this.deck.pop()
             player.firstCardAlive = true
             player.secondCard = this.deck.pop()
@@ -201,8 +200,13 @@ function handleSteal(id, to) {
         return
     }
     if (actor && victim) {
-        victim.coins -= 2
-        actor.coins += 2
+        if (victim.coins == 1) {
+            victim.coins -= 1
+            actor.coins += 1
+        } else {
+            victim.coins -= 2
+            actor.coins += 2
+        }
     } 
 }
 
