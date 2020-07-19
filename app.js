@@ -136,6 +136,7 @@ io.on('connection', (socket) => {
 
     socket.on('action', (p) => {
         changeGameState(p)
+        game.nextTurn()
         // send new game state
         io.to('room1').emit('state change', new GameStatePayload(game))
     })
@@ -151,10 +152,6 @@ io.on('connection', (socket) => {
     socket.on('start game', () => {
         console.log('start game!')
         game.onBegin()
-        io.to('room1').emit('state change', new GameStatePayload(game))
-    })
-    socket.on('next turn', () => {
-        game.nextTurn()
         io.to('room1').emit('state change', new GameStatePayload(game))
     })
 });

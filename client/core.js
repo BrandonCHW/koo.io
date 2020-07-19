@@ -80,50 +80,20 @@ window.onload = () => {
         }
     }
 
-    var income = $("#income").on("click", function() {
-        socket.emit('action', new ActionPayload("income"))
-    }) 
-    var foreign = $("#foreign").on("click", function() {
-        socket.emit('action', new ActionPayload("foreign"))
-    })
-    var coup = $("#coup").on("click", function() {
-        socket.emit('action', new ActionPayload("coup"))
-    })
-    var tax = $("#tax").on("click", function() {
-        socket.emit('action', new ActionPayload("tax"))
-    })
-    var steal = $("#steal").on("click", function() {
-        declareIntention("steal")
-    })
-    var assassinate = $("#assassinate").on("click", function() {
-        declareIntention("assassinate")
-    })
-    var exchange = $("#exchange").on("click", function() {
+    $("input[name='action'] #assassinate").on("checked", () => {
+        $("#playerSelector").css("display","block")
     })
 
+    $("#assassinate").on("unchecked", () => {
+        $("#playerSelector").css("display","none")
+    })
     //TODO remove this later
-    var startGame = $("#startGame").on("click", function() {
+    $("#startGame").on("click", function() {
         socket.emit('start game')
     })
 
-    var nextTurn = $("#nextTurn").on("click", function() {
-        socket.emit('next turn')
+    $("#nextTurn").on("click", function() {
+        const intention = $("input[name='action']:checked").attr("id")
+        socket.emit('action', new ActionPayload(intention))
     })
-
-    //Declares the intention (String)
-    function declareIntention(intention) {
-        if ($("#playerSelector").css("display") === "block") {
-            $("#playerSelector").css("display","none")
-        } else {
-            $("#playerSelector").css("display","block")
-        }
-        $("#intention").text(intention)
-    }
-
-    //choose a player (steal, assassinate)
-    function selectPlayer(name) {
-        $("#playerSelector").css("display","none")
-        socket.emit('action', 
-            new ActionPayload($("#intention").text(), name))
-    }
 }
