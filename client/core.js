@@ -29,6 +29,29 @@ window.onload = () => {
         updateTimer(time)
     })
 
+    socket.on('assassinateTarget', (attackerName, victimId) => {
+        if(playerId === victimId) {
+            $("#attackerName").text(attackerName)
+            $("#attackType").text("assassinating")
+            $('#cardSelect').css("display", "block")
+
+            // TODO: Bullshit Mechanic
+            // TODO: Change target.textContent for a more secure id
+            $(".loseCardSel").on("click", (event) => selectCardToLose(event.target))
+        }
+    })
+
+    socket.on('Coup', (attackerName, victimId) => {
+        if(playerId === victimId) {
+            $("#attackerName").text(attackerName)
+            $("#attackType").text("doing a Coup on")
+            $('#cardSelect').css("display", "block")
+
+            // TODO: Change target.textContent for a more secure id
+            $(".loseCardSel").on("click", (event) => selectCardToLose(event.target))
+        }
+    })
+
     //Updates the 'player status' 
     function updatePlayerStatus(p) {
         $("#playerName").text(p.name)
@@ -47,7 +70,6 @@ window.onload = () => {
                 obj[key] = payload.gameState.players[key]
                 return obj
             }, {})
-        
         var otherSection = $("#otherPlayers > div")
         var playerSelector = $("#playerSelector > div")
         otherSection.empty()
@@ -82,12 +104,13 @@ window.onload = () => {
 
     var income = $("#income").on("click", function() {
         socket.emit('action', new ActionPayload("income"))
-    }) 
+    })
     var foreign = $("#foreign").on("click", function() {
         socket.emit('action', new ActionPayload("foreign"))
     })
     var coup = $("#coup").on("click", function() {
-        socket.emit('action', new ActionPayload("coup"))
+        declareIntention("coup")
+        // socket.emit('action', new ActionPayload("coup"))
     })
     var tax = $("#tax").on("click", function() {
         socket.emit('action', new ActionPayload("tax"))
@@ -120,10 +143,17 @@ window.onload = () => {
         $("#intention").text(intention)
     }
 
-    //choose a player (steal, assassinate)
+    //choose a player (steal, assassinate, Coup)
     function selectPlayer(name) {
         $("#playerSelector").css("display","none")
         socket.emit('action', 
             new ActionPayload($("#intention").text(), name))
+    }
+
+    //choose a card to lose
+    function selectCardToLose(button) {
+        $('#cardSelect').css("display", "none")
+        cardLost = button.value.split(" ")[2]
+        socket.emit('cardLost', playerId, cardLost)
     }
 }
