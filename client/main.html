@@ -14,10 +14,16 @@
         <link rel="stylesheet" type="text/css" href="/css/main.css">
         <!-- Bootstrap JS -->
         <script src="/scripts/bootstrap.min.js"></script>   
+
+        <style>
+            label {
+                background: white
+            }
+        </style>
     </head>
     <body style="height: 100vh;" class="bg-primary">
         <!-- Login Page -->
-        <div class="container h-100">
+        <div class="container h-100" style="display: none">
             <div class="row h-25 align-items-end justify-content-center">
                 <h1>Koo.io</h1>
             </div>
@@ -86,16 +92,25 @@
         <div id="actions">
             <h4>Generic</h4>
             <div>
-                <button id="income">Income: +1 Coin</button>
-                <button id="foreign">Foreign: +2 Coin</button>
-                <button id="coup">Coup: -7 Coins</button>
-            </div>
-        
-            <div>
-                <button id="tax">Tax: +3 Coins</button>
-                <button id="steal">Steal: Yoink (+2 coins)</button>
-                <button id="assassinate">Assassinate: Kill (-3 Coins)</button>
-                <button id="exchange">Exchange: Take 2 cards, keep 1</button>
+                <div>
+                    <label for="income">Income: +1 Coin</label>
+                    <input type="radio" id="income" name="action"></button>
+                    <label for="foreign">Foreign: +2 Coin</label>
+                    <input type="radio" id="foreign" name="action"></button>
+                    <label for="coup">Coup: -7 Coins</label>
+                    <input type="radio" id="coup" name="action"></button>
+                </div>
+
+                <div>
+                    <label for="tax">Tax: +3 Coins</label>
+                    <input type="radio" id="tax" name="action"></button>
+                    <label for="steal">Steal: Yoink (+2 coins)</label>
+                    <input type="radio" id="steal" name="action"></button>
+                    <label for="assassinate">Assassinate: Kill (-3 Coins)</label>
+                    <input type="radio" id="assassinate" name="action"></button>
+                    <label for="exchange">Exchange: Take 2 cards, keep 1</label>
+                    <input type="radio" id="exchange" name="action"></button>
+                </div>
             </div>
 
             <div id="playerSelector" style="display: none;">
