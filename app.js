@@ -219,6 +219,8 @@ function handleSteal(id, to) {
 }
 
 function handleAssassinate(id, to) {
+    console.log('assassinate')
+    console.log(to)
     var actorName = game.players[id].name
     var victimId = findPlayerIdByName(to)
     var victim = game.players[victimId]
@@ -231,6 +233,8 @@ function handleAssassinate(id, to) {
         // } else if (victim.secondCardAlive) {
         //     victim.secondCardAlive = false
         // }
+    } else {
+        console.log('cannot find victim')
     }
 }
 

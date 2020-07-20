@@ -83,11 +83,9 @@ window.onload = () => {
                 (${other.secondCardAlive}); 
                 Coins: ${other.coins}</p>`)
 
-            playerSelector.append(`<button class="playerSel">${other.name}</button>`)
+            playerSelector.append(`<label for="player-${other.name}">${other.name}</label>
+                                   <input type="radio" id="player-${other.name}" data-name="${other.name}" name="playerSel"></button>`)
         }
-
-        // Event listener for player select buttons (TOOD Change target.textContent for a more secure id)
-        $(".playerSel").on("click", (event) => selectPlayer(event.target.textContent))
     }
 
     function updateTimer(time) { 
@@ -120,7 +118,8 @@ window.onload = () => {
 
     $("#nextTurn").on("click", function() {
         const intention = $("input[name='action']:checked").attr("id")
-        socket.emit('action', new ActionPayload(intention))
+        var to = $("input[name='playerSel']:checked").data('name').toString() // gets data-name
+        socket.emit('action', new ActionPayload(intention, to))
     })
 
     //choose a card to lose
