@@ -1,12 +1,13 @@
-class ActionPayload { 
-    constructor(intent, to="") {
-        this.id = socket.id
-        this.intent = intent
-        this.to = to
-    }
-}
-
 window.onload = () => {
+    
+    class ActionPayload { 
+        constructor(intent, to="") {
+            this.id = socket.id
+            this.intent = intent
+            this.to = to
+        }
+    }
+    
     var socket = io()
     
     var playerId = ""
@@ -66,8 +67,20 @@ window.onload = () => {
 
     $("#nextTurn").on("click", function() {
         const intention = $("input[name='action']:checked").attr("id")
-        var to = $("input[name='playerSel']:checked").data('name').toString() // gets data-name
+        if (intention == "assassinate" || intention == "steal")
+            var to = $("input[name='playerSel']:checked").data('name').toString() // gets data-name
         socket.emit('action', new ActionPayload(intention, to))
+    })
+    
+    // Toggle player selection (assassinate, steal)
+    $("input[name='action']").change(function() {
+        const intention = $(this).attr('id')
+        if (intention == "assassinate" || intention == "steal") {
+            $("#intention").text(intention)
+            $("#playerSelector").css("display","block")
+        } else {
+            $("#playerSelector").css("display","none")
+        }
     })
 
     //Updates the 'player status' 
@@ -116,16 +129,4 @@ window.onload = () => {
         cardLost = button.value.split(" ")[2]
         socket.emit('cardLost', playerId, cardLost)
     }
-    
-    // Toggle player selection (assassinate, steal)
-    $("input[name='action']").change(function() {
-        const intention = $(this).attr('id')
-        if (intention == "assassinate" || intention == "steal") {
-            $("#intention").text(intention)
-            $("#playerSelector").css("display","block")
-        } else {
-            console.log('NO')
-            $("#playerSelector").css("display","none")
-        }
-    })
 }
