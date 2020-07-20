@@ -90,8 +90,6 @@ window.onload = () => {
                     }
                 })
 
-                console.log("selectedCards", selectedCards)
-                console.log("unselectedCards", unselectedCards)
                 socket.emit('execute exchange', selectedCards, unselectedCards)
 
                 $("#cardExchange").css("display","none")
