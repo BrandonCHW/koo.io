@@ -74,6 +74,7 @@ window.onload = () => {
         // TEMPORARY SUBMIT BUTTON FOR EXCHANGE
         $("#executeExchange").on('click', function() {
             var selectedCards = []
+            var unselectedCards = []
             $.each($("input[name='cardsToKeep']:checked"), function() {
                 if (selectedCards.length < 2) {// TEMP: je sais pas comment select 2 checkboxes seulement
                     var cardName = $(`label[for='${$(this).attr("id")}']`).text()
@@ -81,7 +82,14 @@ window.onload = () => {
                     selectedCards.push(cardName)
                 }
             })
-            socket.emit('execute exchange', selectedCards)
+            $.each($("input[name='cardsToKeep']:not(:checked)"), function() {
+                if (unselectedCards.length < 2) {// TEMP: je sais pas comment select 2 checkboxes seulement
+                    var cardName = $(`label[for='${$(this).attr("id")}']`).text()
+                    unselectedCards.push(cardName)
+                }
+            })
+
+            socket.emit('execute exchange', selectedCards, unselectedCards)
 
             $("#cardExchange").css("display","none")
         })  

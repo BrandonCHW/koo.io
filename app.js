@@ -62,7 +62,8 @@ class GameState {
     }
 
     onBegin() {
-        this.deck = this.shuffle(this.fillDeck())
+        this.deck = this.fillDeck()
+        this.shuffleDeck()
         this.dealCards()
         this.turn = this.players[Object.keys(this.players)[this.tracker]].name //the first player that connected begins...
         this.inProgress = true
@@ -85,12 +86,14 @@ class GameState {
         ]
     }
 
-    shuffle(a) {
+    // Fisher-Yates Algorithm
+    shuffleDeck() {
+        var a = this.deck        
         for (let i = a.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [a[i], a[j]] = [a[j], a[i]];
         }
-        return a;
+        this.deck = a
     }
 
     //TODO Move this in a service later
@@ -161,8 +164,8 @@ io.on('connection', (socket) => {
         io.to('room1').emit('state change', new GameStatePayload(game))
     })
 
-    socket.on('execute exchange', (cards) => {
-        ExchangeCards(socket.id, cards)
+    socket.on('execute exchange', (selected, unselected) => {
+        ExchangeCards(socket.id, selected, unselected)
         io.to('room1').emit('state change', new GameStatePayload(game))
     })
 });
@@ -253,13 +256,22 @@ function handleExchangeRequest(id) {
     )
 }
 
-function ExchangeCards(id, cards) {
+function ExchangeCards(id, selected, unselected) {
     var currentState = game.players[id]   
     if (currentState.firstCardAlive) {
-        currentState.firstCard = cards[0]
+        currentState.firstCard = selected[0]
     } else if (currentState.secondCardAlive) {
-        currentState.secondCard = cards[1]
+        currentState.secondCard = selected[1]
     }
+
+    console.log('BEFORE', game.deck)
+    // put back unselected
+    game.deck.push.apply(game.deck, unselected)
+    game.shuffleDeck()
+
+    console.log('AFTER', game.deck)
+
+
     io.to('room1').emit('state change', new GameStatePayload(game))
 }
 
