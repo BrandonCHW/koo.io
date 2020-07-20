@@ -109,7 +109,7 @@ class GameState {
 class Player {
     constructor(id) {
         this.name = parseInt(Math.ceil(Math.random()*100)) // random number for now
-        this.coins = 10
+        this.coins = 2
         this.firstCard = "card1"
         this.firstCardAlive = false
         this.secondCard= "card2"
@@ -153,10 +153,6 @@ io.on('connection', (socket) => {
     socket.on('start game', () => {
         console.log('start game!')
         game.onBegin()
-        io.to('room1').emit('state change', new GameStatePayload(game))
-    })
-    socket.on('next turn', () => {
-        game.nextTurn()
         io.to('room1').emit('state change', new GameStatePayload(game))
     })
 
