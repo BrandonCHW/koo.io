@@ -160,6 +160,11 @@ io.on('connection', (socket) => {
         handleCardLoss(victimId, cardLost)
         io.to('room1').emit('state change', new GameStatePayload(game))
     })
+
+    socket.on('execute exchange', (cards) => {
+        ExchangeCards(socket.id, cards)
+        io.to('room1').emit('state change', new GameStatePayload(game))
+    })
 });
 
 function changeGameState(actionPayload) {
@@ -172,7 +177,7 @@ function changeGameState(actionPayload) {
         case "tax": handleCoinChange(id, 3); break;
         case "steal": handleSteal(id, actionPayload.to); break;
         case "assassinate": handleAssassinate(id, actionPayload.to); break;
-        case "exchange": handleExchange(id); break;
+        case "exchange": handleExchangeRequest(id); break;
         default: break;
     }
 } 
@@ -237,7 +242,7 @@ function handleCardLoss(id, cardNumber) {
     //TODO: Handle if player dies (no more cards alive)
 }
 
-function handleExchange(id) {    
+function handleExchangeRequest(id) {    
     const currentState = game.players[id]    
     io.to('room1').emit('exchange', [
             currentState.firstCard,
@@ -247,6 +252,17 @@ function handleExchange(id) {
         ]
     )
 }
+
+function ExchangeCards(id, cards) {
+    var currentState = game.players[id]   
+    if (currentState.firstCardAlive) {
+        currentState.firstCard = cards[0]
+    } else if (currentState.secondCardAlive) {
+        currentState.secondCard = cards[1]
+    }
+    io.to('room1').emit('state change', new GameStatePayload(game))
+}
+
 
 function findPlayerIdByName(name) {
     return Object.keys(game.players).find(key => game.players[key].name.toString() === name)

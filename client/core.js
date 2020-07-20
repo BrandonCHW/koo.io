@@ -70,6 +70,21 @@ window.onload = () => {
             section.append(`<label for="select-card-${i}">${selection[i]}</label>
                             <input type="checkbox" id="select-card-${i}" name="cardsToKeep">`)
         }
+        section.append("<button id='executeExchange'>Execute Exchange</button>")
+        // TEMPORARY SUBMIT BUTTON FOR EXCHANGE
+        $("#executeExchange").on('click', function() {
+            var selectedCards = []
+            $.each($("input[name='cardsToKeep']:checked"), function() {
+                if (selectedCards.length < 2) {// TEMP: je sais pas comment select 2 checkboxes seulement
+                    var cardName = $(`label[for='${$(this).attr("id")}']`).text()
+                    
+                    selectedCards.push(cardName)
+                }
+            })
+            socket.emit('execute exchange', selectedCards)
+
+            $("#cardExchange").css("display","none")
+        })  
     })
 
     //TODO remove this later
@@ -77,6 +92,7 @@ window.onload = () => {
         socket.emit('start game')
     })
 
+    // PASS THE TURN TO THE NEXT PLAYER
     $("#nextTurn").on("click", function() {
         const intention = $("input[name='action']:checked").attr("id")
         if (intention == "assassinate" || intention == "steal" || intention == "coup")
