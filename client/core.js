@@ -1,5 +1,5 @@
 window.onload = () => {
-    
+
     class ActionPayload { 
         constructor(intent, to="") {
             this.id = socket.id
@@ -57,6 +57,17 @@ window.onload = () => {
 
             // TODO: Change target.textContent for a more secure id
             $(".loseCardSel").on("click", (event) => selectCardToLose(event.target))
+        }
+    })
+
+    socket.on('exchange', (selection) => {
+        var section = $("#cardExchange > div")
+        $("#cardExchange").css("display","block")
+        section.empty()
+        console.log(selection)
+        for(var i = 0; i < selection.length; i++) {
+            section.append(`<label for="select-card-${i}">${selection[i]}</label>
+                            <input type="checkbox" id="select-card-${i}" name="cardsToKeep">`)
         }
     })
 

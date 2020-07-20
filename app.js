@@ -166,8 +166,6 @@ io.on('connection', (socket) => {
     })
 });
 
-
-
 function changeGameState(actionPayload) {
     const id = actionPayload.id
     switch(actionPayload.intent) {
@@ -178,7 +176,7 @@ function changeGameState(actionPayload) {
         case "tax": handleCoinChange(id, 3); break;
         case "steal": handleSteal(id, actionPayload.to); break;
         case "assassinate": handleAssassinate(id, actionPayload.to); break;
-        case "exchange": break;
+        case "exchange": handleExchange(id); break;
         default: break;
     }
 } 
@@ -241,6 +239,17 @@ function handleCardLoss(id, cardNumber) {
         victim.secondCardAlive = false
     }
     //TODO: Handle if player dies (no more cards alive)
+}
+
+function handleExchange(id) {    
+    const currentState = game.players[id]    
+    io.to('room1').emit('exchange', [
+            currentState.firstCard,
+            currentState.secondCard,
+            game.deck.pop(),
+            game.deck.pop()
+        ]
+    )
 }
 
 function findPlayerIdByName(name) {
