@@ -253,7 +253,6 @@ function handleExchange(id) {
 }
 
 function findPlayerIdByName(name) {
-    console.log(name)
     return Object.keys(game.players).find(key => game.players[key].name.toString() === name)
 }
 

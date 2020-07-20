@@ -81,7 +81,6 @@ window.onload = () => {
         const intention = $("input[name='action']:checked").attr("id")
         if (intention == "assassinate" || intention == "steal" || intention == "coup")
             var to = $("input[name='playerSel']:checked").data('name').toString() // gets data-name
-        console.log(to)
         socket.emit('action', new ActionPayload(intention, to))
     })
     
