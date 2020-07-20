@@ -247,27 +247,30 @@ function handleCardLoss(id, cardNumber) {
 
 function handleExchangeRequest(id) {    
     const currentState = game.players[id]    
-    io.to('room1').emit('exchange', [
-            currentState.firstCard,
-            currentState.secondCard,
-            game.deck.pop(),
-            game.deck.pop()
-        ]
-    )
+    const selection = []
+    if (currentState.firstCardAlive) 
+        selection.push(currentState.firstCard)
+    if (currentState.secondCardAlive) 
+        selection.push(currentState.secondCard)
+
+    selection.push(game.deck.pop())
+    selection.push(game.deck.pop())
+
+    io.to('room1').emit('exchange', id, selection)
 }
 
 function ExchangeCards(id, selected, unselected) {
     var currentState = game.players[id]   
+    console.log(currentState.secondCardAlive)
     if (currentState.firstCardAlive) {
-        currentState.firstCard = selected[0]
-    } else if (currentState.secondCardAlive) {
-        currentState.secondCard = selected[1]
+        currentState.firstCard = selected.pop()
+    } 
+    if (currentState.secondCardAlive) {
+        currentState.secondCard = selected.pop()
     }
     // put back unselected
     game.deck.push.apply(game.deck, unselected)
     game.shuffleDeck()
-    
-    io.to('room1').emit('state change', new GameStatePayload(game))
 }
 
 
