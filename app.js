@@ -129,7 +129,7 @@ io.on('connection', (socket) => {
 
     //send player identity
     var initialState = game.players[socket.id]
-    io.to(socket.id).emit('self connection', initialState)   
+    io.to(socket.id).emit('self connection', initialState)
 
     // notify other players of new connection
     io.to('room1').emit('state change', new GameStatePayload(game))
@@ -140,6 +140,7 @@ io.on('connection', (socket) => {
         // send new game state
         io.to('room1').emit('state change', new GameStatePayload(game))
     })
+
     socket.on('disconnect', () => {
         delete SOCKET_LIST[socket.id]
         game.onDisconnect(socket.id)
@@ -154,6 +155,15 @@ io.on('connection', (socket) => {
         game.onBegin()
         io.to('room1').emit('state change', new GameStatePayload(game))
     })
+    socket.on('next turn', () => {
+        game.nextTurn()
+        io.to('room1').emit('state change', new GameStatePayload(game))
+    })
+
+    socket.on('cardLost', (victimId, cardLost) => {
+        handleCardLoss(victimId, cardLost)
+        io.to('room1').emit('state change', new GameStatePayload(game))
+    })
 });
 
 
@@ -163,10 +173,11 @@ function changeGameState(actionPayload) {
     switch(actionPayload.intent) {
         case "income": handleCoinChange(id, 1); break;
         case "foreign": handleCoinChange(id, 2); break;
-        case "coup": handleCoinChange(id, -7); break;
+        // TODO: Verify if enough change before launching the Coup!
+        case "coup": handleCoinChange(id, -7); io.to('room1').emit('Coup', game.players[id].name, findPlayerIdByName(actionPayload.to)); break;
         case "tax": handleCoinChange(id, 3); break;
         case "steal": handleSteal(id, actionPayload.to); break;
-        case "assassinate": handleAssassinate(actionPayload.to); break;
+        case "assassinate": handleAssassinate(id, actionPayload.to); break;
         case "exchange": break;
         default: break;
     }
@@ -204,19 +215,33 @@ function handleSteal(id, to) {
             victim.coins -= 2
             actor.coins += 2
         }
-    } 
+    }
 }
 
-function handleAssassinate(to) {
-    var victim = game.players[findPlayerIdByName(to)]
-    
+function handleAssassinate(id, to) {
+    var actorName = game.players[id].name
+    var victimId = findPlayerIdByName(to)
+    var victim = game.players[victimId]
+
+    // TODO: Verify is enough money before assassination!
     if (victim) {
-        if (victim.firstCardAlive) {
-            victim.firstCardAlive = false
-        } else if (victim.secondCardAlive) {
-            victim.secondCardAlive = false
-        }
+        io.to('room1').emit('assassinateTarget', actorName, victimId)
+        // if (victim.firstCardAlive) {
+        //     victim.firstCardAlive = false
+        // } else if (victim.secondCardAlive) {
+        //     victim.secondCardAlive = false
+        // }
     }
+}
+
+function handleCardLoss(id, cardNumber) {
+    victim = game.players[id]
+    if(cardNumber == 1) {
+        victim.firstCardAlive = false
+    } else if (cardNumber == 2) {
+        victim.secondCardAlive = false
+    }
+    //TODO: Handle if player dies (no more cards alive)
 }
 
 function findPlayerIdByName(name) {

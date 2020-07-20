@@ -29,6 +29,29 @@ window.onload = () => {
         updateTimer(time)
     })
 
+    socket.on('assassinateTarget', (attackerName, victimId) => {
+        if(playerId === victimId) {
+            $("#attackerName").text(attackerName)
+            $("#attackType").text("assassinating")
+            $('#cardSelect').css("display", "block")
+
+            // TODO: Bullshit Mechanic
+            // TODO: Change target.textContent for a more secure id
+            $(".loseCardSel").on("click", (event) => selectCardToLose(event.target))
+        }
+    })
+
+    socket.on('Coup', (attackerName, victimId) => {
+        if(playerId === victimId) {
+            $("#attackerName").text(attackerName)
+            $("#attackType").text("doing a Coup on")
+            $('#cardSelect').css("display", "block")
+
+            // TODO: Change target.textContent for a more secure id
+            $(".loseCardSel").on("click", (event) => selectCardToLose(event.target))
+        }
+    })
+
     //Updates the 'player status' 
     function updatePlayerStatus(p) {
         $("#playerName").text(p.name)
@@ -47,7 +70,6 @@ window.onload = () => {
                 obj[key] = payload.gameState.players[key]
                 return obj
             }, {})
-        
         var otherSection = $("#otherPlayers > div")
         var playerSelector = $("#playerSelector > div")
         otherSection.empty()
@@ -80,13 +102,17 @@ window.onload = () => {
         }
     }
 
-    $("input[name='action'] #assassinate").on("checked", () => {
-        $("#playerSelector").css("display","block")
+    $("input[name='action']").change(function() {
+        const intention = $(this).attr('id')
+        if (intention == "assassinate" || intention == "steal") {
+            $("#intention").text(intention)
+            $("#playerSelector").css("display","block")
+        } else {
+            console.log('NO')
+            $("#playerSelector").css("display","none")
+        }
     })
-
-    $("#assassinate").on("unchecked", () => {
-        $("#playerSelector").css("display","none")
-    })
+    
     //TODO remove this later
     $("#startGame").on("click", function() {
         socket.emit('start game')
@@ -96,4 +122,11 @@ window.onload = () => {
         const intention = $("input[name='action']:checked").attr("id")
         socket.emit('action', new ActionPayload(intention))
     })
+
+    //choose a card to lose
+    function selectCardToLose(button) {
+        $('#cardSelect').css("display", "none")
+        cardLost = button.value.split(" ")[2]
+        socket.emit('cardLost', playerId, cardLost)
+    }
 }
