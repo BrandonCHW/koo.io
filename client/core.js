@@ -70,26 +70,33 @@ window.onload = () => {
                 section.append(`<label for="select-card-${i}">${selection[i]}</label>
                                 <input type="checkbox" id="select-card-${i}" name="cardsToKeep">`)
             }
-            section.append("<button id='executeExchange'>Execute Exchange</button>")
+            section.append("<button id='executeExchange' disabled>Execute Exchange</button>")
+            var livesLeft = selection.length - 2; //ghetto
+            $("#exchangeCardSelect input:checkbox").click(function(){
+                var boxesChecked = $("#exchangeCardSelect input:checkbox:checked").length
+                if (boxesChecked > livesLeft) {
+                  return false;
+                }
+                if (boxesChecked == livesLeft) {
+                    $('#executeExchange').prop('disabled', false)
+                } else if (boxesChecked != livesLeft) {
+                    $('#executeExchange').prop('disabled', true)
+                }
+            });
+            
             // TEMPORARY SUBMIT BUTTON FOR EXCHANGE
             $("#executeExchange").on('click', function() {
-                var livesLeft = selection.length - 2; //ghetto
                 var selectedCards = []
                 var unselectedCards = []
                 $.each($("input[name='cardsToKeep']:checked"), function() {
-                    if (selectedCards.length < livesLeft) {// TEMP: je sais pas comment select 1 ou 2 checkboxes seulement
-                        var cardName = $(`label[for='${$(this).attr("id")}']`).text()
-                        
-                        selectedCards.push(cardName)
-                    }
+                    var cardName = $(`label[for='${$(this).attr("id")}']`).text()
+                    selectedCards.push(cardName)
                 })
                 $.each($("input[name='cardsToKeep']:not(:checked)"), function() {
-                    if (unselectedCards.length < 2) {// TEMP: je sais pas comment select 2 checkboxes seulement
-                        var cardName = $(`label[for='${$(this).attr("id")}']`).text()
-                        unselectedCards.push(cardName)
-                    }
+                    var cardName = $(`label[for='${$(this).attr("id")}']`).text()
+                    unselectedCards.push(cardName)
                 })
-
+                
                 socket.emit('execute exchange', selectedCards, unselectedCards)
 
                 $("#cardExchange").css("display","none")
