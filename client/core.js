@@ -1,3 +1,10 @@
+class ActionPayload { 
+    constructor(intent, to="") {
+        this.id = socket.id
+        this.intent = intent
+        this.to = to
+    }
+}
 
 window.onload = () => {
     var socket = io()
@@ -52,6 +59,17 @@ window.onload = () => {
         }
     })
 
+    //TODO remove this later
+    $("#startGame").on("click", function() {
+        socket.emit('start game')
+    })
+
+    $("#nextTurn").on("click", function() {
+        const intention = $("input[name='action']:checked").attr("id")
+        var to = $("input[name='playerSel']:checked").data('name').toString() // gets data-name
+        socket.emit('action', new ActionPayload(intention, to))
+    })
+
     //Updates the 'player status' 
     function updatePlayerStatus(p) {
         $("#playerName").text(p.name)
@@ -61,7 +79,7 @@ window.onload = () => {
         $("#pCard2Name").text(p.secondCard)
         $("#pCard2Alive").text(p.secondCardAlive)
     }
-
+    
     //Updates the 'other players'
     function updateOtherPlayersView(payload) {
         var otherPlayers = Object.keys(payload.gameState.players)
@@ -82,24 +100,24 @@ window.onload = () => {
                 Card2: ${other.secondCard} 
                 (${other.secondCardAlive}); 
                 Coins: ${other.coins}</p>`)
-
+    
             playerSelector.append(`<label for="player-${other.name}">${other.name}</label>
-                                   <input type="radio" id="player-${other.name}" data-name="${other.name}" name="playerSel"></button>`)
+                                    <input type="radio" id="player-${other.name}" data-name="${other.name}" name="playerSel"></button>`)
         }
     }
-
+    
     function updateTimer(time) { 
         $("#roundTimer").text(time)
     }
-
-    class ActionPayload { 
-        constructor(intent, to="") {
-            this.id = socket.id
-            this.intent = intent
-            this.to = to
-        }
+    
+    //choose a card to lose
+    function selectCardToLose(button) {
+        $('#cardSelect').css("display", "none")
+        cardLost = button.value.split(" ")[2]
+        socket.emit('cardLost', playerId, cardLost)
     }
-
+    
+    // Toggle player selection (assassinate, steal)
     $("input[name='action']").change(function() {
         const intention = $(this).attr('id')
         if (intention == "assassinate" || intention == "steal") {
@@ -110,22 +128,4 @@ window.onload = () => {
             $("#playerSelector").css("display","none")
         }
     })
-    
-    //TODO remove this later
-    $("#startGame").on("click", function() {
-        socket.emit('start game')
-    })
-
-    $("#nextTurn").on("click", function() {
-        const intention = $("input[name='action']:checked").attr("id")
-        var to = $("input[name='playerSel']:checked").data('name').toString() // gets data-name
-        socket.emit('action', new ActionPayload(intention, to))
-    })
-
-    //choose a card to lose
-    function selectCardToLose(button) {
-        $('#cardSelect').css("display", "none")
-        cardLost = button.value.split(" ")[2]
-        socket.emit('cardLost', playerId, cardLost)
-    }
 }

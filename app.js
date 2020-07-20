@@ -228,11 +228,6 @@ function handleAssassinate(id, to) {
     // TODO: Verify is enough money before assassination!
     if (victim) {
         io.to('room1').emit('assassinateTarget', actorName, victimId)
-        // if (victim.firstCardAlive) {
-        //     victim.firstCardAlive = false
-        // } else if (victim.secondCardAlive) {
-        //     victim.secondCardAlive = false
-        // }
     } else {
         console.log('cannot find victim')
     }
