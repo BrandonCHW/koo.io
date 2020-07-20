@@ -51,7 +51,6 @@ window.onload = () => {
     })
 
     socket.on('coup', (attackerName, victimId) => {
-        console.log(attackerName, victimId)
         if(playerId === victimId) {
             $("#attackerName").text(attackerName)
             $("#attackType").text("doing a Coup on")

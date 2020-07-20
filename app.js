@@ -263,15 +263,10 @@ function ExchangeCards(id, selected, unselected) {
     } else if (currentState.secondCardAlive) {
         currentState.secondCard = selected[1]
     }
-
-    console.log('BEFORE', game.deck)
     // put back unselected
     game.deck.push.apply(game.deck, unselected)
     game.shuffleDeck()
-
-    console.log('AFTER', game.deck)
-
-
+    
     io.to('room1').emit('state change', new GameStatePayload(game))
 }
 
