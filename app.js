@@ -54,7 +54,7 @@ class GameState {
         this.deck = []
         this.turn = "" // name of the player who plays during this turn
         this.tracker = 0 // used to track the turn
-        this.inProgress = false // TODO temporary (can only next turn after game starts)
+        this.inProgress = false
     }
 
     onDisconnect(id) {

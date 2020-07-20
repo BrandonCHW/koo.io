@@ -17,10 +17,11 @@ window.onload = () => {
 
     // called whenever the game state changes (new connection, action, next turn)
     socket.on('state change', (payload) => {
-        $("#turn").text(payload.gameState.turn)
         if (payload.gameState.turn != payload.gameState.players[playerId].name) {
+            $("#turn").text(payload.gameState.turn)
             $('#nextTurn').prop('disabled', true)
         } else {
+            $("#turn").text(payload.gameState.turn + " (YOU)")
             $('#nextTurn').prop('disabled', false)
         }
         updateOtherPlayersView(payload)
@@ -61,10 +62,9 @@ window.onload = () => {
     })
 
     socket.on('exchange', (selection) => {
-        var section = $("#cardExchange > div")
         $("#cardExchange").css("display","block")
+        var section = $("#cardExchange > div")
         section.empty()
-        console.log(selection)
         for(var i = 0; i < selection.length; i++) {
             section.append(`<label for="select-card-${i}">${selection[i]}</label>
                             <input type="checkbox" id="select-card-${i}" name="cardsToKeep">`)
