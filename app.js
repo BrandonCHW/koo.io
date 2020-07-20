@@ -109,7 +109,7 @@ class GameState {
 class Player {
     constructor(id) {
         this.name = parseInt(Math.ceil(Math.random()*100)) // random number for now
-        this.coins = 2
+        this.coins = 10
         this.firstCard = "card1"
         this.firstCardAlive = false
         this.secondCard= "card2"
@@ -172,7 +172,7 @@ function changeGameState(actionPayload) {
         case "income": handleCoinChange(id, 1); break;
         case "foreign": handleCoinChange(id, 2); break;
         // TODO: Verify if enough change before launching the Coup!
-        case "coup": handleCoinChange(id, -7); io.to('room1').emit('Coup', game.players[id].name, findPlayerIdByName(actionPayload.to)); break;
+        case "coup": handleCoinChange(id, -7); io.to('room1').emit('coup', game.players[id].name, findPlayerIdByName(actionPayload.to)); break;
         case "tax": handleCoinChange(id, 3); break;
         case "steal": handleSteal(id, actionPayload.to); break;
         case "assassinate": handleAssassinate(id, actionPayload.to); break;
@@ -253,6 +253,7 @@ function handleExchange(id) {
 }
 
 function findPlayerIdByName(name) {
+    console.log(name)
     return Object.keys(game.players).find(key => game.players[key].name.toString() === name)
 }
 

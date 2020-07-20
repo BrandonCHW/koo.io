@@ -50,7 +50,8 @@ window.onload = () => {
         }
     })
 
-    socket.on('Coup', (attackerName, victimId) => {
+    socket.on('coup', (attackerName, victimId) => {
+        console.log(attackerName, victimId)
         if(playerId === victimId) {
             $("#attackerName").text(attackerName)
             $("#attackType").text("doing a Coup on")
@@ -78,15 +79,16 @@ window.onload = () => {
 
     $("#nextTurn").on("click", function() {
         const intention = $("input[name='action']:checked").attr("id")
-        if (intention == "assassinate" || intention == "steal")
+        if (intention == "assassinate" || intention == "steal" || intention == "coup")
             var to = $("input[name='playerSel']:checked").data('name').toString() // gets data-name
+        console.log(to)
         socket.emit('action', new ActionPayload(intention, to))
     })
     
-    // Toggle player selection (assassinate, steal)
+    // Toggle player selection (assassinate, steal, coup)
     $("input[name='action']").change(function() {
         const intention = $(this).attr('id')
-        if (intention == "assassinate" || intention == "steal") {
+        if (intention == "assassinate" || intention == "steal" || intention == "coup") {
             $("#intention").text(intention)
             $("#playerSelector").css("display","block")
         } else {
