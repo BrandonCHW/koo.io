@@ -67,7 +67,6 @@ class GameState {
         } else {
             this.turn = nextPlayerName
         }
-        console.log(`nextTurn(${nextPlayerName}): ${this.turn}'s turn`)
     }
 
     fillDeck() {
