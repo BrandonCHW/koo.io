@@ -12,20 +12,9 @@ app.get("/", (req,res) => {
     res.sendFile(__dirname + "/client/main.html")
 });
 
-app.get('/scripts/jquery.slim.min.js', function(req, res) {
-    res.sendFile(__dirname + '/node_modules/jquery/dist/jquery.slim.min.js');
-});
-
-app.get('/scripts/bootstrap.min.js', function(req, res) {
-    res.sendFile(__dirname + '/node_modules/bootstrap/dist/js/bootstrap.min.js');
-});
-
-app.get('/scripts/popper.min.js', function(req, res) {
-    res.sendFile(__dirname + '/node_modules/popper.js/dist/umd/popper.min.js');
-});
-
-app.use(express.static("scripts"))
-
+app.use('/jquery', express.static(__dirname + "/node_modules/jquery/dist"))
+app.use('/bootstrap', express.static(__dirname + "/node_modules/bootstrap/dist"))
+app.use('/popper', express.static(__dirname + "/node_modules/popper.js/dist/umd"))
 app.use(express.static("client"))
 
 app.get("*", (req,res) => {
