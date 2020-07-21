@@ -8,14 +8,16 @@ const PORT = 3000
 ///////////////////////
 /*****  ROUTING ******/
 ///////////////////////
-app.get("/", (req,res) => {
-    res.sendFile(__dirname + "/client/main.html")
-});
 
+//Static modules and files
 app.use('/jquery', express.static(__dirname + "/node_modules/jquery/dist"))
 app.use('/bootstrap', express.static(__dirname + "/node_modules/bootstrap/dist"))
 app.use('/popper', express.static(__dirname + "/node_modules/popper.js/dist/umd"))
 app.use(express.static("client"))
+
+app.get("/", (req,res) => {
+    res.sendFile(__dirname + "/client/main.html")
+});
 
 app.get("*", (req,res) => {
     res.send("Error")
