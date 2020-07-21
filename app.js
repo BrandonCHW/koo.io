@@ -69,8 +69,8 @@ class GameState {
         this.inProgress = true
     }
 
-    nextTurn() {
-        if (this.inProgress) {
+    nextTurn(nextPlayerName = "") {
+        if (this.inProgress && nextPlayerName === "") {
             this.tracker = ++this.tracker % Object.keys(this.players).length
             this.turn = this.turn = this.players[Object.keys(this.players)[this.tracker]].name
         }
@@ -165,7 +165,7 @@ io.on('connection', (socket) => {
     })
 
     socket.on('execute exchange', (selected, unselected) => {
-        ExchangeCards(socket.id, selected, unselected)
+        exchangeCards(socket.id, selected, unselected)
         io.to('room1').emit('state change', new GameStatePayload(game))
     })
 });
@@ -257,7 +257,7 @@ function handleExchangeRequest(id) {
     io.to('room1').emit('exchange', id, selection)
 }
 
-function ExchangeCards(id, selected, unselected) {
+function exchangeCards(id, selected, unselected) {
     var currentState = game.players[id]   
     console.log(currentState.secondCardAlive)
     if (currentState.firstCardAlive) {
