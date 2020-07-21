@@ -166,11 +166,11 @@ io.on('connection', (socket) => {
 function changeGameState(actionPayload) {
     const id = actionPayload.id
     switch(actionPayload.intent) {
-        case "income": handleCoinChange(id, 1); break;
-        case "foreign": handleCoinChange(id, 2); break;
+        case "income": handleCoinChange(id, 1); game.nextTurn(); break;
+        case "foreign": handleCoinChange(id, 2); game.nextTurn(); break;
         // TODO: Verify if enough change before launching the Coup!
         case "coup": handleCoup(id); break;
-        case "tax": handleCoinChange(id, 3); break;
+        case "tax": handleCoinChange(id, 3); game.nextTurn(); break;
         case "steal": handleSteal(id, actionPayload.to); break;
         case "assassinate": handleAssassinate(id, actionPayload.to); break;
         case "exchange": handleExchangeRequest(id); break;
@@ -195,7 +195,7 @@ function handleCoinChange(id, amount) {
             console.log("Can't perform action (Over 10 coins, must Coup)")
         } else {
             player.coins += amount            
-            game.nextTurn()
+            
         }
     } else {
         console.log("error couldn't find player")
