@@ -307,12 +307,6 @@ function handleChallengeRequests(challengedId, challengerId, cardIndex, expected
             io.to('room1').emit('state change', new GameStatePayload(game))
         }
     } else if (cardIndex == 1) {
-            console.log("expectedCardType")
-            console.log(expectedCardType)
-            console.log("challenged.secondCard")
-            console.log(expectedCardType)
-            console.log("challenged.secondCard == expectedCardType")
-            console.log(challenged.secondCard == expectedCardType)
         if(challenged.secondCard == expectedCardType) {
             //The guy didn't lie
             //TODO: Refactor into a function: takes the card, shuffles the deck and gets out a new card
@@ -324,8 +318,6 @@ function handleChallengeRequests(challengedId, challengerId, cardIndex, expected
             processCurrentAction()
             io.to('room1').emit('loseCard', challengerId, false, "Player " +  challenged.name + " was really a " + expectedCardType + "! You have lost the challenge, choose a card to lose.")
         } else {
-            console.log("challenged.name")
-            console.log(challenged.name)
             challenged.secondCardAlive = false
             game.nextTurn()
             io.to('room1').emit('state change', new GameStatePayload(game))
@@ -371,10 +363,6 @@ function handleAssassinate(actorName, victimId) {
 }
 
 function handleCardLoss(id, cardIndex, endTurn) {
-    console.log("game.players[id].name")
-    console.log(game.players[id].name)
-    console.log("cardIndex")
-    console.log(cardIndex)
     victim = game.players[id]
     if(cardIndex == 0) {
         victim.firstCardAlive = false
@@ -405,7 +393,6 @@ function handleExchangeRequest(id) {
 
 function exchangeCards(id, selected, unselected) {
     var currentState = game.players[id]   
-    console.log(currentState.secondCardAlive)
     if (currentState.firstCardAlive) {
         currentState.firstCard = selected.pop()
     } 
