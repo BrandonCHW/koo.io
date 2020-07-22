@@ -11,19 +11,22 @@ window.onload = () => {
     var socket = io()
     
     var playerId = ""
+    var playerCoins = 0
     socket.on('connect',  () => {
         playerId = socket.id
     })
 
     // called whenever the game state changes (new connection, action, next turn)
     socket.on('state change', (payload) => {
+        updateCurrentMove(`Waiting on <span class="turn"></span> to choose a move...`)
         if (payload.gameState.turn != payload.gameState.players[playerId].name) {
-            $("#turn").text(payload.gameState.turn)
+            $(".turn").text(payload.gameState.turn)
             $('#nextTurn').prop('disabled', true)
         } else {
-            $("#turn").text(payload.gameState.turn + " (YOU)")
+            $(".turn").text(payload.gameState.turn + " (YOU)")
             $('#nextTurn').prop('disabled', false)
         }
+        clearReactionTab()
         updateOtherPlayersView(payload)
         updatePlayerStatus(payload.gameState.players[playerId])
     })
@@ -38,26 +41,89 @@ window.onload = () => {
         updateTimer(time)
     })
 
-    socket.on('assassinateTarget', (attackerName, victimId) => {
-        if(playerId === victimId) {
-            $("#attackerName").text(attackerName)
-            $("#attackType").text("assassinating")
-            $('#cardSelect').css("display", "block")
+    socket.on('action broadcast', (p) => {
+        var text
+        //if there is no victim
+        if (p.victimName === "")
+            text = p.actorName + " is performing " + p.intent
+        else {
+            text = p.actorName + " is performing " + p.intent + " on " + p.victimName
+        }
+        updateCurrentMove(text)
+        if(playerId != p.actorId) {
+            $('#reaction').css("display", "block")
+            $('#reaction').append(`<button class="reactionSel" value="confirm">Confirm</button>`)
 
-            // TODO: Bullshit Mechanic
-            // TODO: Change target.textContent for a more secure id
-            $(".loseCardSel").on("click", (event) => selectCardToLose(event.target))
+            //If the action is take foreign aid, can be blocked by claiming duke
+            if (p.intent == "foreign") {
+                $('#reaction').append(`<button class="reactionSel" value="block-duke">Claim to be Duke</button>`)
+            }
+            //If the action is other than income, coup or foreign, can challenge
+            else if (p.intent != "income" && p.intent != "coup") {
+                $('#reaction').append(`<button class="reactionSel" id="challenge-reaction" value="challenge">Challenge</button>`)
+            }
+
+            //If the action is assassinate and the player is the target, can claim contessa
+            if (p.intent == "assassinate" && playerId === p.victimId) {
+                $('#reaction').append(`<button class="reactionSel" value="block-contessa">Claim to be Contessa</button>`)
+            }
+            //If the action is steal and the player is the target, can claim captain or ambassador
+            else if (p.intent == "steal" && playerId === p.victimId) {
+                $('#reaction').append(`<button class="reactionSel" value="block-captain">Claim to be Captain</button>`)
+                $('#reaction').append(`<button class="reactionSel" value="block-ambassador">Claim to be Ambassador</button>`)
+            }
+            $(".reactionSel").on("click", (event) => handleCurrentActionResponse(event.target))
         }
     })
 
-    socket.on('coup', (attackerName, victimId) => {
-        if(playerId === victimId) {
-            $("#attackerName").text(attackerName)
-            $("#attackType").text("doing a Coup on")
-            $('#cardSelect').css("display", "block")
+    socket.on('challenge', (actionPayload) => {
+        //Remove all challenge buttons from players still deciding as you cannot challenge the same player more than once
+        $('#challenge-reaction').remove()
+        var text
+        var expectedCardType
+        switch(actionPayload.intent) {
+            case "tax":
+                text = actionPayload.actorName + " is calling out " + actionPayload.victimName + "'s Duke as a bluff."
+                expectedCardType = "Duke"
+                break
+            case "steal":
+                text = actionPayload.actorName + " is calling out " + actionPayload.victimName + "'s Captain as a bluff."
+                expectedCardType = "Captain"
+                break
+            case "assassinate":
+                text = actionPayload.actorName + " is calling out " + actionPayload.victimName + "'s Assassin as a bluff."
+                expectedCardType = "Assassin"
+                break
+            case "exchange":
+                text = actionPayload.actorName + " is calling out " + actionPayload.victimName + "'s Ambassador as a bluff."
+                expectedCardType = "Ambassador"
+                break
+            default:
+                break
+        }
+        // function selectCard(event, button, opts) {
+        //     $('#cardSelect').css("display", "none")
+        //     socket.emit(event, playerId, button.value, opts)
+        // }
+        updateCurrentMove(text)
+        if (actionPayload.victimId == playerId) {
+            updateCardSelectMessage("Choose a card to prove your claim or to lose if you've been caught lying!")
+            $(".cardSelectBtn").on("click", (event) => {
+                $('#cardSelect').css("display", "none")
+                socket.emit('challengeVerification', playerId, actionPayload.actorId, event.target.value, expectedCardType)
+            })
+            // selectCard('challengeVerification', event.target, challengeOpts))
+        }
+    })
 
+    socket.on('loseCard', (victimId, endTurn, message) => {
+        if(playerId === victimId) {
+            updateCardSelectMessage(message)
             // TODO: Change target.textContent for a more secure id
-            $(".loseCardSel").on("click", (event) => selectCardToLose(event.target))
+            $(".cardSelectBtn").on("click", (event) => {
+                $('#cardSelect').css("display", "none")
+                socket.emit('cardLost', playerId, event.target.value, endTurn)
+            })
         }
     })
 
@@ -130,12 +196,27 @@ window.onload = () => {
 
     //Updates the 'player status' 
     function updatePlayerStatus(p) {
+        playerCoins = p.coins
         $("#playerName").text(p.name)
         $("#pCoins").text(p.coins)
         $("#pCard1Name").text(p.firstCard)
         $("#pCard1Alive").text(p.firstCardAlive)
         $("#pCard2Name").text(p.secondCard)
         $("#pCard2Alive").text(p.secondCardAlive)
+        limitPlayerActions()
+    }
+
+    //Disable buttons of actions which are unavailable (not enough coins, must coup)
+    function limitPlayerActions() {
+        $("input[name='action']").prop('disabled', false)
+        if (playerCoins >= 10) {
+            $("input[name='action']").not("#coup").prop('disabled', true)
+        } else {
+            if (playerCoins < 7)
+                $("#coup").prop('disabled', true)
+            if (playerCoins < 3)
+                $("#assassinate").prop('disabled', true)
+        }
     }
     
     //Updates the 'other players'
@@ -168,10 +249,33 @@ window.onload = () => {
         $("#roundTimer").text(time)
     }
     
-    //choose a card to lose
-    function selectCardToLose(button) {
+    //select a card to the server (lose card or select card for challenge verification). Opts defines which card the server will verify against
+    function selectCard(event, button, opts) {
         $('#cardSelect').css("display", "none")
-        cardLost = button.value.split(" ")[2]
-        socket.emit('cardLost', playerId, cardLost)
+        socket.emit(event, playerId, button.value, opts)
+    }
+
+    function updateCurrentMove(message) {
+        var display = $('#currentMove')
+        display.empty()
+        display.append(message)
+    }
+
+    function updateCardSelectMessage(message) {
+        $("#cardSelectMessage").text(message)
+        $('#cardSelect').css("display", "block")
+    }
+
+    function clearReactionTab() {
+        $('#reaction').empty()
+        $('#reaction').css("display: none")
+    }
+
+    function handleCurrentActionResponse(button) {
+        clearReactionTab()
+        var buttonValue = button.value.split("-")
+        var response = buttonValue[0]
+        var responseDetail = buttonValue[1]
+        socket.emit('currentActionResponse', playerId, response, responseDetail)
     }
 }

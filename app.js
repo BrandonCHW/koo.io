@@ -55,6 +55,8 @@ class GameState {
         this.turn = "" // name of the player who plays during this turn
         this.tracker = 0 // used to track the turn
         this.inProgress = false
+        this.confirmations = 0
+        this.currentAction = ""
     }
 
     onDisconnect(id) {
@@ -73,6 +75,8 @@ class GameState {
         if (this.inProgress) {
             this.tracker = ++this.tracker % Object.keys(this.players).length
             this.turn = this.turn = this.players[Object.keys(this.players)[this.tracker]].name
+            this.confirmations = 0
+            this.currentAction = ""
         }
     }
 
@@ -120,6 +124,16 @@ class Player {
     }
 }
 
+class ActionPayload { 
+    constructor(actorName, actorId, intent, victimName="", victimId="") {
+        this.actorName = actorName
+        this.actorId = actorId
+        this.intent = intent
+        this.victimName = victimName
+        this.victimId = victimId
+    }
+}
+
 // Create new game (only 1 lobby)
 var game = new GameState()
 
@@ -138,10 +152,20 @@ io.on('connection', (socket) => {
     io.to('room1').emit('state change', new GameStatePayload(game))
 
     socket.on('action', (p) => {
-        changeGameState(p)
-        game.nextTurn()
-        // send new game state
-        io.to('room1').emit('state change', new GameStatePayload(game))
+        var done = handleActionRequest(p)
+        if (done) {
+            game.nextTurn()
+            io.to('room1').emit('state change', new GameStatePayload(game))
+            // send new game state
+        }
+    })
+
+    socket.on('currentActionResponse', (playerId, response, responseDetail) => {
+        handleActionResponse(playerId, response, responseDetail)
+    })
+
+    socket.on('challengeVerification', (challengedId, challengerId, cardIndex, expectedCardType) => {
+        handleChallengeRequests(challengedId, challengerId, cardIndex, expectedCardType)
     })
 
     socket.on('disconnect', () => {
@@ -159,9 +183,8 @@ io.on('connection', (socket) => {
         io.to('room1').emit('state change', new GameStatePayload(game))
     })
 
-    socket.on('cardLost', (victimId, cardLost) => {
-        handleCardLoss(victimId, cardLost)
-        io.to('room1').emit('state change', new GameStatePayload(game))
+    socket.on('cardLost', (victimId, cardLost, endTurn) => {
+        handleCardLoss(victimId, cardLost, endTurn)
     })
 
     socket.on('execute exchange', (selected, unselected) => {
@@ -170,44 +193,158 @@ io.on('connection', (socket) => {
     })
 });
 
-function changeGameState(actionPayload) {
-    const id = actionPayload.id
+function handleActionRequest(actionPayload) {
+    var actor = game.players[actionPayload.id]
     switch(actionPayload.intent) {
-        case "income": handleCoinChange(id, 1); break;
-        case "foreign": handleCoinChange(id, 2); break;
-        // TODO: Verify if enough change before launching the Coup!
-        case "coup": handleCoinChange(id, -7); io.to('room1').emit('coup', game.players[id].name, findPlayerIdByName(actionPayload.to)); break;
-        case "tax": handleCoinChange(id, 3); break;
-        case "steal": handleSteal(id, actionPayload.to); break;
-        case "assassinate": handleAssassinate(id, actionPayload.to); break;
-        case "exchange": handleExchangeRequest(id); break;
-        default: break;
+        case "income":
+            game.currentAction = new ActionPayload(actor.name, actionPayload.id, "income")
+            io.to('room1').emit('action broadcast', game.currentAction)
+            handleCoinChange(actor, 1)
+            return true
+        case "foreign":
+            game.currentAction = new ActionPayload(actor.name, actionPayload.id, "foreign")
+            io.to('room1').emit('action broadcast', game.currentAction)
+            return false
+        case "coup":
+            game.currentAction = new ActionPayload(actor.name, actionPayload.id, "coup", actionPayload.to, findPlayerIdByName(actionPayload.to))
+            io.to('room1').emit('action broadcast', game.currentAction)
+            io.to('room1').emit('loseCard', actionPayload.to, true, "Player " +  actor.name + " is performing a coup on you! Choose a card to lose.")
+            handleCoinChange(actor, -7)
+            return true
+        case "tax":
+            game.currentAction = new ActionPayload(actor.name, actionPayload.id, "tax")
+            io.to('room1').emit('action broadcast', game.currentAction)
+            return false
+        case "steal":
+            game.currentAction = new ActionPayload(actor.name, actionPayload.id, "steal", actionPayload.to, findPlayerIdByName(actionPayload.to))
+            io.to('room1').emit('action broadcast', game.currentAction)
+            return false
+        case "assassinate":
+            game.currentAction = new ActionPayload(actor.name, actionPayload.id, "assassinate", actionPayload.to, findPlayerIdByName(actionPayload.to))
+            io.to('room1').emit('action broadcast', game.currentAction)
+            return false
+        case "exchange":
+            game.currentAction = new ActionPayload(actor.name, actionPayload.id, "exchange")
+            io.to('room1').emit('action broadcast', game.currentAction)
+            return false
+        default:
+            break
     }
-} 
+}
+
+function processCurrentAction() {
+    var action = game.currentAction.intent
+    var actor = game.players[game.currentAction.actorId]
+    switch(action) {
+        //Probably unused as no one can block/challenge/prevent the income action and it executes without vote
+        // case "income":
+        //     handleCoinChange(actor, 1)
+        //     break
+        case "foreign":
+            handleCoinChange(actor, 2)
+            game.nextTurn()
+            io.to('room1').emit('state change', new GameStatePayload(game))
+            break
+        //Probably unused as no one can block/challenge/prevent the coup action and it executes without vote
+        // case "coup":
+        //     handleCoinChange(actor, -7)
+        //     io.to('room1').emit('coup', actor, game.currentAction.victimId)
+        //     break
+        case "tax":
+            handleCoinChange(actor, 3)
+            game.nextTurn()
+            io.to('room1').emit('state change', new GameStatePayload(game))
+            break
+        case "steal":
+            handleSteal(actor, game.currentAction.victimId)
+            game.nextTurn()
+            io.to('room1').emit('state change', new GameStatePayload(game))
+            break
+        case "assassinate":
+            handleCoinChange(actor, -3)
+            handleAssassinate(actor.name, game.currentAction.victimId)
+            break
+        case "exchange":
+            handleExchangeRequest(game.currentAction.actorId)
+            break
+        default:
+            break
+    }
+}
+
+function handleActionResponse(playerId, response, responseDetail) {
+    switch(response) {
+        case "confirm":
+            game.confirmations++
+            //If everyone except the action initiator (who cannot 'vote') confirms the action, it goes through
+            if(game.confirmations == Object.keys(game.players).length - 1)
+                processCurrentAction()
+            break
+        case "challenge":
+            io.to('room1').emit('challenge', new ActionPayload(game.players[playerId].name, playerId, game.currentAction.intent, game.currentAction.actorName, game.currentAction.actorId))
+            break
+        case "block":
+            //Shouldn't use an action payload tbh but the view updating should fit on the front end side
+            // io.to('room1').emit('action broadcast', game.currentAction)
+            //Emit to everyone that you are claiming to be "responseDetail"
+            break
+        default:
+            break
+    }
+}
+
+function handleChallengeRequests(challengedId, challengerId, cardIndex, expectedCardType) {
+    challenged = game.players[challengedId]
+    if(cardIndex == 0) {
+        if(challenged.firstCard == expectedCardType) {
+            //The guy didn't lie
+            //TODO: Refactor into a function: takes the card, shuffles the deck and gets out a new card
+            game.deck.push(challenged.firstCard)
+            challenged.firstCard = ""
+            game.shuffleDeck()
+            challenged.firstCard = game.deck.pop()
+            //TODO: [bug] turn might revert to another player before the other player can choose to lose his card
+            processCurrentAction()
+            io.to('room1').emit('loseCard', challengerId, false, "Player " +  challenged.name + " was really a " + expectedCardType + "! You have lost the challenge, choose a card to lose.")
+        } else {
+            challenged.firstCardAlive = false
+            game.nextTurn()
+            io.to('room1').emit('state change', new GameStatePayload(game))
+        }
+    } else if (cardIndex == 1) {
+        if(challenged.secondCard == expectedCardType) {
+            //The guy didn't lie
+            //TODO: Refactor into a function: takes the card, shuffles the deck and gets out a new card
+            game.deck.push(challenged.secondCard)
+            challenged.secondCard = ""
+            game.shuffleDeck()
+            challenged.secondCard = game.deck.pop()
+            //TODO: [bug] turn might revert to another player before the other player can choose to lose his card
+            processCurrentAction()
+            io.to('room1').emit('loseCard', challengerId, false, "Player " +  challenged.name + " was really a " + expectedCardType + "! You have lost the challenge, choose a card to lose.")
+        } else {
+            challenged.secondCardAlive = false
+            game.nextTurn()
+            io.to('room1').emit('state change', new GameStatePayload(game))
+        }
+    }
+}
 
 //add or remove coins by a certain amount (amount can be negative)
-function handleCoinChange(id, amount) {
-    var player = game.players[id]
+function handleCoinChange(player, amount) {
     if (player) {
-        if (player.coins + amount < 0) {
-            console.log("Not enough coins")
-        } else if (player.coins >= 10 && amount > 0) {
-            console.log("Can't perform action (Over 10 coins, must Coup)")
-        } else {
-            player.coins += amount
-        }
+        player.coins += amount
     } else {
         console.log("error couldn't find player")
     }
 }
 
-function handleSteal(id, to) {
-    var actor = game.players[id]
-    var victim = game.players[findPlayerIdByName(to)]
+function handleSteal(actor, victimId) {
+    var victim = game.players[victimId]
 
     if (actor.coins > 10 || victim.coins < 1) {
         console.log("Actor has too many coins, or victim has too few coins")
-        return
+        return false
     }
     if (actor && victim) {
         if (victim.coins == 1) {
@@ -217,39 +354,40 @@ function handleSteal(id, to) {
             victim.coins -= 2
             actor.coins += 2
         }
+        return true
     }
 }
 
-function handleAssassinate(id, to) {
-    var actorName = game.players[id].name
-    var victimId = findPlayerIdByName(to)
+function handleAssassinate(actorName, victimId) {
     var victim = game.players[victimId]
-
-    // TODO: Verify is enough money before assassination!
     if (victim) {
-        io.to('room1').emit('assassinateTarget', actorName, victimId)
+        io.to('room1').emit('loseCard', victimId, true, "Player " +  actorName + " has successfully assassinated you! Choose a card to lose.")
     } else {
         console.log('cannot find victim')
     }
 }
 
-function handleCardLoss(id, cardNumber) {
+function handleCardLoss(id, cardIndex, endTurn) {
     victim = game.players[id]
-    if(cardNumber == 1) {
+    if(cardIndex == 0) {
         victim.firstCardAlive = false
-    } else if (cardNumber == 2) {
+    } else if (cardIndex == 1) {
         victim.secondCardAlive = false
     }
     //TODO: Handle if player dies (no more cards alive)
+
+    if(endTurn)
+        game.nextTurn()
+    io.to('room1').emit('state change', new GameStatePayload(game))
 }
 
-function handleExchangeRequest(id) {    
-    const currentState = game.players[id]    
+function handleExchangeRequest(id) {
+    actor = game.players[id]
     const selection = []
-    if (currentState.firstCardAlive) 
-        selection.push(currentState.firstCard)
-    if (currentState.secondCardAlive) 
-        selection.push(currentState.secondCard)
+    if (actor.firstCardAlive) 
+        selection.push(actor.firstCard)
+    if (actor.secondCardAlive) 
+        selection.push(actor.secondCard)
 
     selection.push(game.deck.pop())
     selection.push(game.deck.pop())
@@ -269,6 +407,10 @@ function ExchangeCards(id, selected, unselected) {
     // put back unselected
     game.deck.push.apply(game.deck, unselected)
     game.shuffleDeck()
+
+    // TODO: Move somewhere else?
+    game.nextTurn()
+    io.to('room1').emit('state change', new GameStatePayload(game))
 }
 
 
