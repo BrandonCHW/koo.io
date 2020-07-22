@@ -110,6 +110,7 @@ window.onload = () => {
             updateCardSelectMessage("Choose a card to prove your claim or to lose if you've been caught lying!")
             $(".cardSelectBtn").on("click", (event) => {
                 $('#cardSelect').css("display", "none")
+                $(".cardSelectBtn").off("click")
                 socket.emit('challengeVerification', playerId, actionPayload.actorId, event.target.value, expectedCardType)
             })
             // selectCard('challengeVerification', event.target, challengeOpts))
@@ -122,6 +123,7 @@ window.onload = () => {
             // TODO: Change target.textContent for a more secure id
             $(".cardSelectBtn").on("click", (event) => {
                 $('#cardSelect').css("display", "none")
+                $(".cardSelectBtn").off("click")
                 socket.emit('cardLost', playerId, event.target.value, endTurn)
             })
         }
@@ -247,12 +249,6 @@ window.onload = () => {
     
     function updateTimer(time) { 
         $("#roundTimer").text(time)
-    }
-    
-    //select a card to the server (lose card or select card for challenge verification). Opts defines which card the server will verify against
-    function selectCard(event, button, opts) {
-        $('#cardSelect').css("display", "none")
-        socket.emit(event, playerId, button.value, opts)
     }
 
     function updateCurrentMove(message) {

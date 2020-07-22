@@ -8,25 +8,16 @@ const PORT = 3000
 ///////////////////////
 /*****  ROUTING ******/
 ///////////////////////
+
+//Static modules and files
+app.use('/jquery', express.static(__dirname + "/node_modules/jquery/dist"))
+app.use('/bootstrap', express.static(__dirname + "/node_modules/bootstrap/dist"))
+app.use('/popper', express.static(__dirname + "/node_modules/popper.js/dist/umd"))
+app.use(express.static("client"))
+
 app.get("/", (req,res) => {
     res.sendFile(__dirname + "/client/main.html")
 });
-
-app.get('/scripts/jquery.slim.min.js', function(req, res) {
-    res.sendFile(__dirname + '/node_modules/jquery/dist/jquery.slim.min.js');
-});
-
-app.get('/scripts/bootstrap.min.js', function(req, res) {
-    res.sendFile(__dirname + '/node_modules/bootstrap/dist/js/bootstrap.min.js');
-});
-
-app.get('/scripts/popper.min.js', function(req, res) {
-    res.sendFile(__dirname + '/node_modules/popper.js/dist/umd/popper.min.js');
-});
-
-app.use(express.static("scripts"))
-
-app.use(express.static("client"))
 
 app.get("*", (req,res) => {
     res.send("Error")
@@ -71,12 +62,15 @@ class GameState {
         this.inProgress = true
     }
 
-    nextTurn() {
-        if (this.inProgress) {
+    nextTurn(nextPlayerName = "") {
+        if (this.inProgress && nextPlayerName === "") {
             this.tracker = ++this.tracker % Object.keys(this.players).length
-            this.turn = this.turn = this.players[Object.keys(this.players)[this.tracker]].name
-            this.confirmations = 0
-            this.currentAction = ""
+            // this.turn = this.turn = this.players[Object.keys(this.players)[this.tracker]].name
+            // this.confirmations = 0
+            // this.currentAction = ""
+            this.turn = this.players[Object.keys(this.players)[this.tracker]].name
+        } else {
+            this.turn = nextPlayerName
         }
     }
 
@@ -188,7 +182,8 @@ io.on('connection', (socket) => {
     })
 
     socket.on('execute exchange', (selected, unselected) => {
-        ExchangeCards(socket.id, selected, unselected)
+        exchangeCards(socket.id, selected, unselected)
+        game.nextTurn()
         io.to('room1').emit('state change', new GameStatePayload(game))
     })
 });
@@ -312,6 +307,12 @@ function handleChallengeRequests(challengedId, challengerId, cardIndex, expected
             io.to('room1').emit('state change', new GameStatePayload(game))
         }
     } else if (cardIndex == 1) {
+            console.log("expectedCardType")
+            console.log(expectedCardType)
+            console.log("challenged.secondCard")
+            console.log(expectedCardType)
+            console.log("challenged.secondCard == expectedCardType")
+            console.log(challenged.secondCard == expectedCardType)
         if(challenged.secondCard == expectedCardType) {
             //The guy didn't lie
             //TODO: Refactor into a function: takes the card, shuffles the deck and gets out a new card
@@ -323,6 +324,8 @@ function handleChallengeRequests(challengedId, challengerId, cardIndex, expected
             processCurrentAction()
             io.to('room1').emit('loseCard', challengerId, false, "Player " +  challenged.name + " was really a " + expectedCardType + "! You have lost the challenge, choose a card to lose.")
         } else {
+            console.log("challenged.name")
+            console.log(challenged.name)
             challenged.secondCardAlive = false
             game.nextTurn()
             io.to('room1').emit('state change', new GameStatePayload(game))
@@ -368,6 +371,10 @@ function handleAssassinate(actorName, victimId) {
 }
 
 function handleCardLoss(id, cardIndex, endTurn) {
+    console.log("game.players[id].name")
+    console.log(game.players[id].name)
+    console.log("cardIndex")
+    console.log(cardIndex)
     victim = game.players[id]
     if(cardIndex == 0) {
         victim.firstCardAlive = false
@@ -381,21 +388,22 @@ function handleCardLoss(id, cardIndex, endTurn) {
     io.to('room1').emit('state change', new GameStatePayload(game))
 }
 
-function handleExchangeRequest(id) {
-    actor = game.players[id]
+function handleExchangeRequest(id) {    
+    const currentPlayer = game.players[id]    
     const selection = []
-    if (actor.firstCardAlive) 
-        selection.push(actor.firstCard)
-    if (actor.secondCardAlive) 
-        selection.push(actor.secondCard)
+    if (currentPlayer.firstCardAlive) 
+        selection.push(currentPlayer.firstCard)
+    if (currentPlayer.secondCardAlive) 
+        selection.push(currentPlayer.secondCard)
 
     selection.push(game.deck.pop())
     selection.push(game.deck.pop())
 
+    game.nextTurn(currentPlayer.name)
     io.to('room1').emit('exchange', id, selection)
 }
 
-function ExchangeCards(id, selected, unselected) {
+function exchangeCards(id, selected, unselected) {
     var currentState = game.players[id]   
     console.log(currentState.secondCardAlive)
     if (currentState.firstCardAlive) {
