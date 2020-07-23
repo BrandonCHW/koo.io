@@ -50,7 +50,7 @@ window.onload = () => {
 
             //If the action is take foreign aid, can be blocked by claiming duke
             if (actionPayload.intent == "foreign") {
-                $('#reaction').append(`<button class="reactionSel" value="block duke">Claim to be Duke</button>`)
+                $('#reaction').append(`<button class="reactionSel" value="block-duke">Claim to be Duke</button>`)
             }
             //If the action is other than income, coup or foreign, can challenge
             else if (actionPayload.intent != "income" && actionPayload.intent != "coup") {
@@ -59,12 +59,12 @@ window.onload = () => {
 
             //If the action is assassinate and the player is the target, can claim contessa
             if (actionPayload.intent == "assassinate" && playerId === actionPayload.victimId) {
-                $('#reaction').append(`<button class="reactionSel" value="block contessa">Claim to be Contessa</button>`)
+                $('#reaction').append(`<button class="reactionSel" value="block-contessa">Claim to be Contessa</button>`)
             }
             //If the action is steal and the player is the target, can claim captain or ambassador
             else if (actionPayload.intent == "steal" && playerId === actionPayload.victimId) {
-                $('#reaction').append(`<button class="reactionSel" value="block captain">Claim to be Captain</button>`)
-                $('#reaction').append(`<button class="reactionSel" value="block ambassador">Claim to be Ambassador</button>`)
+                $('#reaction').append(`<button class="reactionSel" value="block-captain">Claim to be Captain</button>`)
+                $('#reaction').append(`<button class="reactionSel" value="block-ambassador">Claim to be Ambassador</button>`)
             }
             $(".reactionSel").on("click", (event) => handleActionChallengeResponse('currentActionResponse', event.target))
         }
@@ -76,7 +76,7 @@ window.onload = () => {
         if(playerId != actionPayload.actorId) {
             $('#reaction').css("display", "block")
             $('#reaction').append(`<button class="reactionSel" value="confirm">Confirm</button>`)
-            $('#reaction').append(`<button class="reactionSel" id="challenge-reaction" value="challenge ${actionPayload.actorId}">Challenge</button>`)
+            $('#reaction').append(`<button class="reactionSel" id="challenge-reaction" value="challenge">Challenge</button>`)
             $(".reactionSel").on("click", (event) => handleActionChallengeResponse('blockResponse', event.target))
         }
     })
@@ -273,9 +273,9 @@ window.onload = () => {
 
     function handleActionChallengeResponse(eventName, button) {
         clearReactionTab()
-        var buttonValue = button.value.split(" ")
+        var buttonValue = button.value.split("-")
         var response = buttonValue[0]
-        var responseDetail = buttonValue[1]
-        socket.emit(eventName, playerId, response, responseDetail)
+        var blockRole = buttonValue[1]
+        socket.emit(eventName, playerId, response, blockRole)
     }
 }

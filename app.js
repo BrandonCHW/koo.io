@@ -46,10 +46,7 @@ class GameState {
         this.turn = "" // name of the player who plays during this turn
         this.tracker = 0 // used to track the turn
         this.inProgress = false
-        this.confirmations = 0
-        this.currentAction = ""
         this.actionHistory =[]
-        this.currentExpectedRole = ""
     }
 
     onDisconnect(id) {
@@ -68,8 +65,6 @@ class GameState {
         if (this.inProgress && nextPlayerName === "") {
             this.tracker = ++this.tracker % Object.keys(this.players).length
             // this.turn = this.turn = this.players[Object.keys(this.players)[this.tracker]].name
-            this.confirmations = 0
-            this.currentAction = ""
             this.turn = this.players[Object.keys(this.players)[this.tracker]].name
         } else {
             this.turn = nextPlayerName
@@ -123,10 +118,8 @@ class Player {
 class ActionPayload {
     //Action payload destined to be sent to the client
     constructor(actorId, intent, displayText="", victimId="") {
-        // this.actorName = actorName
         this.actorId = actorId
         this.intent = intent
-        // this.victimName = victimName
         this.victimId = victimId
         this.displayText = displayText
     }
@@ -167,12 +160,12 @@ io.on('connection', (socket) => {
         }
     })
 
-    socket.on('currentActionResponse', (playerId, response, responseDetail) => {
-        handleActionResponse(playerId, response, responseDetail)
+    socket.on('currentActionResponse', (playerId, response, blockRole) => {
+        handleActionResponse(playerId, response, blockRole)
     })
 
-    socket.on('blockResponse', (playerId, response, responseDetail) => {
-        handleBlockResponse(playerId, response, responseDetail)
+    socket.on('blockResponse', (playerId, response) => {
+        handleBlockResponse(playerId, response)
     })
 
     socket.on('challengeVerification', (challengedId, challengerId, cardIndex, expectedCardType) => {
@@ -208,58 +201,52 @@ io.on('connection', (socket) => {
 function handleActionRequest(actionPayload) {
     var actor = game.players[actionPayload.id]
     var displayText
+    var actionRequest
     switch(actionPayload.intent) {
         case "income":
-            // game.currentAction = new ActionPayload(actor.name, actionPayload.id, "income")
             displayText = actor.name + " is performing an income action"
-            game.currentAction = new ActionPayload(actionPayload.id, "income", displayText)
-            game.actionHistory.push(new ActionLog(game.currentAction, "action"))
-            io.to('room1').emit('action broadcast', game.currentAction)
+            actionRequest = new ActionPayload(actionPayload.id, "income", displayText)
+            game.actionHistory.push(new ActionLog(actionRequest, "action"))
+            io.to('room1').emit('action broadcast', actionRequest)
             handleCoinChange(actor, 1)
             return true
         case "foreign":
-            // game.currentAction = new ActionPayload(actor.name, actionPayload.id, "foreign")
             displayText = actor.name + " is performing a take foreign aid action"
-            game.currentAction = new ActionPayload(actionPayload.id, "foreign", displayText)
-            game.actionHistory.push(new ActionLog(game.currentAction, "action"))
-            io.to('room1').emit('action broadcast', game.currentAction)
+            actionRequest = new ActionPayload(actionPayload.id, "foreign", displayText)
+            game.actionHistory.push(new ActionLog(actionRequest, "action"))
+            io.to('room1').emit('action broadcast', actionRequest)
             return false
         case "coup":
-            // game.currentAction = new ActionPayload(actor.name, actionPayload.id, "coup", actionPayload.to, findPlayerIdByName(actionPayload.to))
             displayText = actor.name + " is performing a coup action on " + actionPayload.to
-            game.currentAction = new ActionPayload(actionPayload.id, "coup", displayText, findPlayerIdByName(actionPayload.to))
-            game.actionHistory.push(new ActionLog(game.currentAction, "action"))
-            io.to('room1').emit('action broadcast', game.currentAction)
+            actionRequest = new ActionPayload(actionPayload.id, "coup", displayText, findPlayerIdByName(actionPayload.to))
+            game.actionHistory.push(new ActionLog(actionRequest, "action"))
+            io.to('room1').emit('action broadcast', actionRequest)
             io.to('room1').emit('loseCard', actionPayload.to, true, "Player " +  actor.name + " is performing a coup on you! Choose a card to lose.")
             handleCoinChange(actor, -7)
             return true
         case "tax":
-            // game.currentAction = new ActionPayload(actor.name, actionPayload.id, "tax")
             displayText = actor.name + " is performing a tax action"
-            game.currentAction = new ActionPayload(actionPayload.id, "tax", displayText)
-            game.actionHistory.push(new ActionLog(game.currentAction, "action"))
-            io.to('room1').emit('action broadcast', game.currentAction)
+            actionRequest = new ActionPayload(actionPayload.id, "tax", displayText)
+            game.actionHistory.push(new ActionLog(actionRequest, "action"))
+            io.to('room1').emit('action broadcast', actionRequest)
             return false
         case "steal":
-            // game.currentAction = new ActionPayload(actor.name, actionPayload.id, "steal", actionPayload.to, findPlayerIdByName(actionPayload.to))
             displayText = actor.name + " is performing a steal action on " + actionPayload.to
-            game.currentAction = new ActionPayload(actionPayload.id, "steal", displayText, findPlayerIdByName(actionPayload.to))
-            game.actionHistory.push(new ActionLog(game.currentAction, "action"))
-            io.to('room1').emit('action broadcast', game.currentAction)
+            actionRequest = new ActionPayload(actionPayload.id, "steal", displayText, findPlayerIdByName(actionPayload.to))
+            game.actionHistory.push(new ActionLog(actionRequest, "action"))
+            io.to('room1').emit('action broadcast', actionRequest)
             return false
         case "assassinate":
-            // game.currentAction = new ActionPayload(actor.name, actionPayload.id, "assassinate", actionPayload.to, findPlayerIdByName(actionPayload.to))
             displayText = actor.name + " is performing an assasinate action on " + actionPayload.to
-            game.currentAction = new ActionPayload(actionPayload.id, "assassinate", displayText, findPlayerIdByName(actionPayload.to))
-            game.actionHistory.push(new ActionLog(game.currentAction, "action"))
-            io.to('room1').emit('action broadcast', game.currentAction)
+            actionRequest = new ActionPayload(actionPayload.id, "assassinate", displayText, findPlayerIdByName(actionPayload.to))
+            game.actionHistory.push(new ActionLog(actionRequest, "action"))
+            io.to('room1').emit('action broadcast', actionRequest)
             return false
         case "exchange":
-            // game.currentAction = new ActionPayload(actor.name, actionPayload.id, "exchange")
             displayText = actor.name + " is performing an exchange action"
-            game.currentAction = new ActionPayload(actionPayload.id, "exchange", displayText)
-            game.actionHistory.push(new ActionLog(game.currentAction, "action"))
-            io.to('room1').emit('action broadcast', game.currentAction)
+            actionRequest = new ActionPayload(actionPayload.id, "exchange", displayText)
+            game.actionHistory.push(new ActionLog(actionRequest, "action"))
+            io.to('room1').emit('action broadcast', actionRequest)
             return false
         default:
             break
@@ -275,24 +262,15 @@ function processLastAction() {
             break;
         }
     }
-    // var currentAction = game.actionHistory[game.actionHistory.length - 1]
     var action = currentAction.intent
     var actor = game.players[currentAction.actorId]
     switch(action) {
-        //Probably unused as no one can block/challenge/prevent the income action and it executes without vote
-        // case "income":
-        //     handleCoinChange(actor, 1)
-        //     break
+        //No switch case for income/coup actions because no one can block/challenge it. It just executes automatically on receiving the request from client
         case "foreign":
             handleCoinChange(actor, 2)
             game.nextTurn()
             io.to('room1').emit('state change', new GameStatePayload(game))
             break
-        //Probably unused as no one can block/challenge/prevent the coup action and it executes without vote
-        // case "coup":
-        //     handleCoinChange(actor, -7)
-        //     io.to('room1').emit('coup', actor, game.currentAction.victimId)
-        //     break
         case "tax":
             handleCoinChange(actor, 3)
             game.nextTurn()
@@ -315,7 +293,7 @@ function processLastAction() {
     }
 }
 
-function handleActionResponse(playerId, response, responseDetail) {
+function handleActionResponse(playerId, response, blockRole) {
     switch(response) {
         case "confirm":
             var numberConfirmations = ++game.actionHistory[game.actionHistory.length - 1].confirmations
@@ -324,32 +302,26 @@ function handleActionResponse(playerId, response, responseDetail) {
                 processLastAction()
             break
         case "challenge":
-            //Shouldn't use an action payload tbh but the view updating should be able to interpret the role challenged by the action performed
-            // io.to('room1').emit('challenge', new ActionPayload(game.players[playerId].name, playerId, game.currentAction.intent, game.currentAction.actorName, game.currentAction.actorId))
             var victimId = game.actionHistory[game.actionHistory.length - 1].actorId
             //TODO: Change action descriptors to the role which they correspond to facilitate clientside display and variable handling (ie: tax -> duke, steal -> captain)
             var displayText = game.players[playerId].name + " is challenging " + game.players[victimId].name
-            game.currentAction = new ActionPayload(playerId, "challenge-" + game.actionHistory[game.actionHistory.length - 1].intent, displayText, victimId)
-            game.actionHistory.push(new ActionLog(game.currentAction, "challenge"))
-            io.to('room1').emit('challenge', game.currentAction)
+            var challengeAction = new ActionPayload(playerId, "challenge-" + game.actionHistory[game.actionHistory.length - 1].intent, displayText, victimId)
+            game.actionHistory.push(new ActionLog(challengeAction, "challenge"))
+            io.to('room1').emit('challenge', challengeAction)
             break
         case "block":
-            currentExpectedRole = responseDetail //Absolutely disgusting way to keep track of the role that the blocker claims he/she is
             var victimId = game.actionHistory[game.actionHistory.length - 1].actorId
-            var displayText = game.players[playerId].name + " is claiming to be " + responseDetail + " to block " + game.players[victimId].name + " 's action."
-            game.currentAction = new ActionPayload(playerId, "block-" + responseDetail, displayText)
-            game.actionHistory.push(new ActionLog(game.currentAction, "block"))
-            // console.log("game.currentAction")
-            // console.log(game.currentAction)
-            io.to('room1').emit('block broadcast', game.currentAction)
+            var displayText = game.players[playerId].name + " is claiming to be " + blockRole + " to block " + game.players[victimId].name + " 's action."
+            var blockAction = new ActionPayload(playerId, "block-" + blockRole, displayText)
+            game.actionHistory.push(new ActionLog(blockAction, "block"))
+            io.to('room1').emit('block broadcast', blockAction)
             break
         default:
             break
     }
 }
 
-//responseDetail is the id of the player who blocked the action (ie: the one who gets challenged when someone presses on the challenge button)
-function handleBlockResponse(playerId, response, responseDetail) {
+function handleBlockResponse(playerId, response) {
     switch(response) {
         case "confirm":
             var numberConfirmations = ++game.actionHistory[game.actionHistory.length - 1].confirmations
@@ -363,10 +335,9 @@ function handleBlockResponse(playerId, response, responseDetail) {
             //TODO: Change action descriptors to the role which they correspond to facilitate clientside display and variable handling (ie: tax -> duke, steal -> captain)
             var displayText = game.players[playerId].name + " is challenging " + game.players[victimId].name
             var roleClaimed = game.actionHistory[game.actionHistory.length - 1].intent.split("-")[1]
-            game.currentAction = new ActionPayload(playerId, "challenge-" + roleClaimed, displayText, victimId)
-            game.actionHistory.push(new ActionLog(game.currentAction, "challenge"))
-            io.to('room1').emit('challenge', game.currentAction)
-            // io.to('room1').emit('challenge', new ActionPayload(game.players[playerId].name, playerId, game.currentAction.intent, game.players[responseDetail].name, responseDetail))
+            var challengeAction = new ActionPayload(playerId, "challenge-" + roleClaimed, displayText, victimId)
+            game.actionHistory.push(new ActionLog(challengeAction, "challenge"))
+            io.to('room1').emit('challenge', challengeAction)
             break
         default:
             break
