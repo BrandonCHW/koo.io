@@ -41,72 +41,82 @@ window.onload = () => {
         updateTimer(time)
     })
 
-    socket.on('action broadcast', (p) => {
-        var text
-        //if there is no victim
-        if (p.victimName === "")
-            text = p.actorName + " is performing " + p.intent
-        else {
-            text = p.actorName + " is performing " + p.intent + " on " + p.victimName
-        }
-        updateCurrentMove(text)
-        if(playerId != p.actorId) {
+    socket.on('action broadcast', (actionPayload) => {
+        updateCurrentMove(actionPayload.displayText)
+        //The player who initiated the action can't challenge or block himself/herself
+        if(playerId != actionPayload.actorId) {
             $('#reaction').css("display", "block")
             $('#reaction').append(`<button class="reactionSel" value="confirm">Confirm</button>`)
 
             //If the action is take foreign aid, can be blocked by claiming duke
-            if (p.intent == "foreign") {
-                $('#reaction').append(`<button class="reactionSel" value="block-duke">Claim to be Duke</button>`)
+            if (actionPayload.intent == "foreign") {
+                $('#reaction').append(`<button class="reactionSel" value="block duke">Claim to be Duke</button>`)
             }
             //If the action is other than income, coup or foreign, can challenge
-            else if (p.intent != "income" && p.intent != "coup") {
-                $('#reaction').append(`<button class="reactionSel" id="challenge-reaction" value="challenge">Challenge</button>`)
+            else if (actionPayload.intent != "income" && actionPayload.intent != "coup") {
+                $('#reaction').append(`<button class="reactionSel" id="challenge reaction" value="challenge">Challenge</button>`)
             }
 
             //If the action is assassinate and the player is the target, can claim contessa
-            if (p.intent == "assassinate" && playerId === p.victimId) {
-                $('#reaction').append(`<button class="reactionSel" value="block-contessa">Claim to be Contessa</button>`)
+            if (actionPayload.intent == "assassinate" && playerId === actionPayload.victimId) {
+                $('#reaction').append(`<button class="reactionSel" value="block contessa">Claim to be Contessa</button>`)
             }
             //If the action is steal and the player is the target, can claim captain or ambassador
-            else if (p.intent == "steal" && playerId === p.victimId) {
-                $('#reaction').append(`<button class="reactionSel" value="block-captain">Claim to be Captain</button>`)
-                $('#reaction').append(`<button class="reactionSel" value="block-ambassador">Claim to be Ambassador</button>`)
+            else if (actionPayload.intent == "steal" && playerId === actionPayload.victimId) {
+                $('#reaction').append(`<button class="reactionSel" value="block captain">Claim to be Captain</button>`)
+                $('#reaction').append(`<button class="reactionSel" value="block ambassador">Claim to be Ambassador</button>`)
             }
-            $(".reactionSel").on("click", (event) => handleCurrentActionResponse(event.target))
+            $(".reactionSel").on("click", (event) => handleActionChallengeResponse('currentActionResponse', event.target))
+        }
+    })
+
+    socket.on('block broadcast', (actionPayload) => {
+        updateCurrentMove(actionPayload.displayText)
+        //The player who claimed a role to block an action can't challenge himself/herself
+        if(playerId != actionPayload.actorId) {
+            $('#reaction').css("display", "block")
+            $('#reaction').append(`<button class="reactionSel" value="confirm">Confirm</button>`)
+            $('#reaction').append(`<button class="reactionSel" id="challenge-reaction" value="challenge ${actionPayload.actorId}">Challenge</button>`)
+            $(".reactionSel").on("click", (event) => handleActionChallengeResponse('blockResponse', event.target))
         }
     })
 
     socket.on('challenge', (actionPayload) => {
         //Remove all challenge buttons from players still deciding as you cannot challenge the same player more than once
         $('#challenge-reaction').remove()
-        var text
-        var expectedCardType
-        switch(actionPayload.intent) {
-            case "tax":
-                text = actionPayload.actorName + " is calling out " + actionPayload.victimName + "'s Duke as a bluff."
-                expectedCardType = "Duke"
-                break
-            case "steal":
-                text = actionPayload.actorName + " is calling out " + actionPayload.victimName + "'s Captain as a bluff."
-                expectedCardType = "Captain"
-                break
-            case "assassinate":
-                text = actionPayload.actorName + " is calling out " + actionPayload.victimName + "'s Assassin as a bluff."
-                expectedCardType = "Assassin"
-                break
-            case "exchange":
-                text = actionPayload.actorName + " is calling out " + actionPayload.victimName + "'s Ambassador as a bluff."
-                expectedCardType = "Ambassador"
-                break
-            default:
-                break
-        }
-        // function selectCard(event, button, opts) {
-        //     $('#cardSelect').css("display", "none")
-        //     socket.emit(event, playerId, button.value, opts)
-        // }
-        updateCurrentMove(text)
+        console.log("actionPayload")
+        console.log(actionPayload)
+        console.log("actionPayload.intent.split('-')")
+        console.log(actionPayload.intent.split("-"))
+        console.log("actionPayload.intent.split('-')[1]")
+        console.log(actionPayload.intent.split("-")[1])
+        //Update everyone on who is challenging who
+        updateCurrentMove(actionPayload.displayText)
+        //If you are the person who was challenged, choose a card to reveal
         if (actionPayload.victimId == playerId) {
+            var challengedIntent = actionPayload.intent.split("-")[1]
+            switch(challengedIntent) {
+                case "duke":
+                case "tax":
+                    expectedCardType = "Duke"
+                    break
+                case "captain":
+                case "steal":
+                    expectedCardType = "Captain"
+                    break
+                case "assassinate":
+                    expectedCardType = "Assassin"
+                    break
+                case "ambassador":
+                case "exchange":
+                    expectedCardType = "Ambassador"
+                    break
+                case "contessa":
+                    expectedCardType = "Contessa"
+                    break 
+                default:
+                    break
+            }
             updateCardSelectMessage("Choose a card to prove your claim or to lose if you've been caught lying!")
             $(".cardSelectBtn").on("click", (event) => {
                 $('#cardSelect').css("display", "none")
@@ -267,11 +277,11 @@ window.onload = () => {
         $('#reaction').css("display: none")
     }
 
-    function handleCurrentActionResponse(button) {
+    function handleActionChallengeResponse(eventName, button) {
         clearReactionTab()
-        var buttonValue = button.value.split("-")
+        var buttonValue = button.value.split(" ")
         var response = buttonValue[0]
         var responseDetail = buttonValue[1]
-        socket.emit('currentActionResponse', playerId, response, responseDetail)
+        socket.emit(eventName, playerId, response, responseDetail)
     }
 }
