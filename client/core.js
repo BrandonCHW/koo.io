@@ -84,12 +84,6 @@ window.onload = () => {
     socket.on('challenge', (actionPayload) => {
         //Remove all challenge buttons from players still deciding as you cannot challenge the same player more than once
         $('#challenge-reaction').remove()
-        console.log("actionPayload")
-        console.log(actionPayload)
-        console.log("actionPayload.intent.split('-')")
-        console.log(actionPayload.intent.split("-"))
-        console.log("actionPayload.intent.split('-')[1]")
-        console.log(actionPayload.intent.split("-")[1])
         //Update everyone on who is challenging who
         updateCurrentMove(actionPayload.displayText)
         //If you are the person who was challenged, choose a card to reveal

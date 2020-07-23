@@ -376,13 +376,6 @@ function handleBlockResponse(playerId, response, responseDetail) {
 //TODO: [bug] turn might revert to another player before the other player can choose to lose his card
 function handleChallengeRequests(challengedId, challengerId, cardIndex, expectedCardType) {
     challenged = game.players[challengedId]
-    console.log("cardIndex")
-    console.log(cardIndex)
-    console.log("expectedCardType")
-    console.log(expectedCardType)
-    console.log("challenged")
-    console.log(challenged)
-    console.log("")
     if(cardIndex == 0) {
         //The challenged didn't lie
         if(challenged.firstCard == expectedCardType) {
@@ -391,8 +384,6 @@ function handleChallengeRequests(challengedId, challengerId, cardIndex, expected
             challenged.firstCard = ""
             game.shuffleDeck()
             challenged.firstCard = game.deck.pop()
-            console.log("game.actionHistory[game.actionHistory.length - 2]")
-            console.log(game.actionHistory[game.actionHistory.length - 2])
             //If the last move logged was an action, execute it (ie: the player who performs the action actually had the corresponding role)
             if(game.actionHistory[game.actionHistory.length - 2].type == "action") {
                 processLastAction()
@@ -404,8 +395,6 @@ function handleChallengeRequests(challengedId, challengerId, cardIndex, expected
             }
         //The challenged lied
         } else {
-            console.log("game.actionHistory[game.actionHistory.length - 2]")
-            console.log(game.actionHistory[game.actionHistory.length - 2])
             challenged.firstCardAlive = false
             //If the last move logged before the challenge was an action, execute it (ie: the player who performs the action DID NOT actually have (or choose to reveal) the required role card)
             if(game.actionHistory[game.actionHistory.length - 2].type == "action") {
@@ -425,8 +414,6 @@ function handleChallengeRequests(challengedId, challengerId, cardIndex, expected
             challenged.secondCard = ""
             game.shuffleDeck()
             challenged.secondCard = game.deck.pop()
-            console.log("game.actionHistory[game.actionHistory.length - 2]")
-            console.log(game.actionHistory[game.actionHistory.length - 2])
             //If the last move logged before the challenge was an action, execute it (ie: the player who performs the action actually had the corresponding role)
             if(game.actionHistory[game.actionHistory.length - 2].type == "action") {
                 processLastAction()
@@ -450,21 +437,6 @@ function handleChallengeRequests(challengedId, challengerId, cardIndex, expected
             }
         }
     }
-
-    //     if(challenged.secondCard == expectedCardType) {
-    //         //TODO: Refactor into a function: takes the card, shuffles the deck and gets out a new card
-    //         game.deck.push(challenged.secondCard)
-    //         challenged.secondCard = ""
-    //         game.shuffleDeck()
-    //         challenged.secondCard = game.deck.pop()
-    //         processLastAction()
-    //         io.to('room1').emit('loseCard', challengerId, false, "Player " +  challenged.name + " was really a " + expectedCardType + "! You have lost the challenge, choose a card to lose.")
-    //     } else {
-    //         challenged.secondCardAlive = false
-    //         game.nextTurn()
-    //         io.to('room1').emit('state change', new GameStatePayload(game))
-    //     }
-    // }
 }
 
 //add or remove coins by a certain amount (amount can be negative)
@@ -529,7 +501,7 @@ function handleExchangeRequest(id) {
     selection.push(game.deck.pop())
     selection.push(game.deck.pop())
 
-    game.nextTurn(currentPlayer.name)
+    game.nextTurn()
     io.to('room1').emit('exchange', id, selection)
 }
 
