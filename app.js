@@ -152,12 +152,12 @@ io.on('connection', (socket) => {
     io.to('room1').emit('state change', new GameStatePayload(game))
 
     socket.on('action', (p) => {
-        var done = handleActionRequest(p)
-        if (done) {
-            game.nextTurn()
-            io.to('room1').emit('state change', new GameStatePayload(game))
-            // send new game state
-        }
+        /*var done = */handleActionRequest(p)
+        // if (done) {
+        //     game.nextTurn()
+        //     io.to('room1').emit('state change', new GameStatePayload(game))
+        //     // send new game state
+        // }
     })
 
     socket.on('currentActionResponse', (playerId, response, blockRole) => {
@@ -202,55 +202,76 @@ function handleActionRequest(actionPayload) {
     var actor = game.players[actionPayload.id]
     var displayText
     var actionRequest
-    switch(actionPayload.intent) {
-        case "income":
-            displayText = actor.name + " is performing an income action"
-            actionRequest = new ActionPayload(actionPayload.id, "income", displayText)
-            game.actionHistory.push(new ActionLog(actionRequest, "action"))
-            io.to('room1').emit('action broadcast', actionRequest)
-            handleCoinChange(actor, 1)
-            return true
-        case "foreign":
-            displayText = actor.name + " is performing a take foreign aid action"
-            actionRequest = new ActionPayload(actionPayload.id, "foreign", displayText)
-            game.actionHistory.push(new ActionLog(actionRequest, "action"))
-            io.to('room1').emit('action broadcast', actionRequest)
-            return false
-        case "coup":
-            displayText = actor.name + " is performing a coup action on " + actionPayload.to
-            actionRequest = new ActionPayload(actionPayload.id, "coup", displayText, findPlayerIdByName(actionPayload.to))
-            game.actionHistory.push(new ActionLog(actionRequest, "action"))
-            io.to('room1').emit('action broadcast', actionRequest)
-            io.to('room1').emit('loseCard', actionPayload.to, true, "Player " +  actor.name + " is performing a coup on you! Choose a card to lose.")
-            handleCoinChange(actor, -7)
-            return true
-        case "tax":
-            displayText = actor.name + " is performing a tax action"
-            actionRequest = new ActionPayload(actionPayload.id, "tax", displayText)
-            game.actionHistory.push(new ActionLog(actionRequest, "action"))
-            io.to('room1').emit('action broadcast', actionRequest)
-            return false
-        case "steal":
-            displayText = actor.name + " is performing a steal action on " + actionPayload.to
-            actionRequest = new ActionPayload(actionPayload.id, "steal", displayText, findPlayerIdByName(actionPayload.to))
-            game.actionHistory.push(new ActionLog(actionRequest, "action"))
-            io.to('room1').emit('action broadcast', actionRequest)
-            return false
-        case "assassinate":
-            displayText = actor.name + " is performing an assasinate action on " + actionPayload.to
-            actionRequest = new ActionPayload(actionPayload.id, "assassinate", displayText, findPlayerIdByName(actionPayload.to))
-            game.actionHistory.push(new ActionLog(actionRequest, "action"))
-            io.to('room1').emit('action broadcast', actionRequest)
-            return false
-        case "exchange":
-            displayText = actor.name + " is performing an exchange action"
-            actionRequest = new ActionPayload(actionPayload.id, "exchange", displayText)
-            game.actionHistory.push(new ActionLog(actionRequest, "action"))
-            io.to('room1').emit('action broadcast', actionRequest)
-            return false
-        default:
-            break
+    if(actionPayload.to == "") {
+        displayText = actor.name + " is performing " + actionPayload.intent
+    } else {
+        displayText = actor.name + " is performing " + actionPayload.intent + " on " + actionPayload.to
+        actionRequest = new ActionPayload(actionPayload.id, actionPayload.intent, displayText)
     }
+    actionRequest = new ActionPayload(actionPayload.id, actionPayload.intent, displayText, findPlayerIdByName(actionPayload.to))
+    game.actionHistory.push(new ActionLog(actionRequest, "action"))
+    io.to('room1').emit('action broadcast', actionRequest)
+
+    if(actionPayload.intent == "income") {
+        handleCoinChange(actor, 1)
+        game.nextTurn()
+        io.to('room1').emit('state change', new GameStatePayload(game))
+    } else if (actionPayload.intent == "coup") {
+        io.to('room1').emit('loseCard', findPlayerIdByName(actionPayload.to), true, "Player " +  actor.name + " is performing a coup on you! Choose a card to lose.")
+        handleCoinChange(actor, -7)
+    }
+
+//    switch(actionPayload.intent) {
+//         case "income":
+//             displayText = actor.name + " is performing an income action"
+//             actionRequest = new ActionPayload(actionPayload.id, "income", displayText)
+//             game.actionHistory.push(new ActionLog(actionRequest, "action"))
+//             io.to('room1').emit('action broadcast', actionRequest)
+//             handleCoinChange(actor, 1)
+//             game.nextTurn()
+//             io.to('room1').emit('state change', new GameStatePayload(game))
+//             return true
+//         case "foreign":
+//             displayText = actor.name + " is performing a take foreign aid action"
+//             actionRequest = new ActionPayload(actionPayload.id, "foreign", displayText)
+//             game.actionHistory.push(new ActionLog(actionRequest, "action"))
+//             io.to('room1').emit('action broadcast', actionRequest)
+//             return false
+//         case "coup":
+//             displayText = actor.name + " is performing a coup action on " + actionPayload.to
+//             actionRequest = new ActionPayload(actionPayload.id, "coup", displayText, findPlayerIdByName(actionPayload.to))
+//             game.actionHistory.push(new ActionLog(actionRequest, "action"))
+//             io.to('room1').emit('action broadcast', actionRequest)
+//             io.to('room1').emit('loseCard', findPlayerIdByName(actionPayload.to), true, "Player " +  actor.name + " is performing a coup on you! Choose a card to lose.")
+//             handleCoinChange(actor, -7)
+//             return true
+//         case "tax":
+//             displayText = actor.name + " is performing a tax action"
+//             actionRequest = new ActionPayload(actionPayload.id, "tax", displayText)
+//             game.actionHistory.push(new ActionLog(actionRequest, "action"))
+//             io.to('room1').emit('action broadcast', actionRequest)
+//             return false
+//         case "steal":
+//             displayText = actor.name + " is performing a steal action on " + actionPayload.to
+//             actionRequest = new ActionPayload(actionPayload.id, "steal", displayText, findPlayerIdByName(actionPayload.to))
+//             game.actionHistory.push(new ActionLog(actionRequest, "action"))
+//             io.to('room1').emit('action broadcast', actionRequest)
+//             return false
+//         case "assassinate":
+//             displayText = actor.name + " is performing an assasinate action on " + actionPayload.to
+//             actionRequest = new ActionPayload(actionPayload.id, "assassinate", displayText, findPlayerIdByName(actionPayload.to))
+//             game.actionHistory.push(new ActionLog(actionRequest, "action"))
+//             io.to('room1').emit('action broadcast', actionRequest)
+//             return false
+//         case "exchange":
+//             displayText = actor.name + " is performing an exchange action"
+//             actionRequest = new ActionPayload(actionPayload.id, "exchange", displayText)
+//             game.actionHistory.push(new ActionLog(actionRequest, "action"))
+//             io.to('room1').emit('action broadcast', actionRequest)
+//             return false
+//         default:
+//             break
+//     } 
 }
 
 function processLastAction() {
@@ -350,11 +371,7 @@ function handleChallengeRequests(challengedId, challengerId, cardIndex, expected
     if(cardIndex == 0) {
         //The challenged didn't lie
         if(challenged.firstCard == expectedCardType) {
-            //TODO: Refactor into a function: takes the card, shuffles the deck and gets out a new card
-            game.deck.push(challenged.firstCard)
-            challenged.firstCard = ""
-            game.shuffleDeck()
-            challenged.firstCard = game.deck.pop()
+            getReplacementCard(challenged, cardIndex)
             //If the last move logged was an action, execute it (ie: the player who performs the action actually had the corresponding role)
             if(game.actionHistory[game.actionHistory.length - 2].type == "action") {
                 processLastAction()
@@ -380,11 +397,7 @@ function handleChallengeRequests(challengedId, challengerId, cardIndex, expected
     } else if (cardIndex == 1) {
         //The challenged didn't lie
         if(challenged.secondCard == expectedCardType) {
-            //TODO: Refactor into a function: takes the card, shuffles the deck and gets out a new card
-            game.deck.push(challenged.secondCard)
-            challenged.secondCard = ""
-            game.shuffleDeck()
-            challenged.secondCard = game.deck.pop()
+            getReplacementCard(challenged, cardIndex)
             //If the last move logged before the challenge was an action, execute it (ie: the player who performs the action actually had the corresponding role)
             if(game.actionHistory[game.actionHistory.length - 2].type == "action") {
                 processLastAction()
@@ -496,6 +509,20 @@ function exchangeCards(id, selected, unselected) {
 
 function findPlayerIdByName(name) {
     return Object.keys(game.players).find(key => game.players[key].name.toString() === name)
+}
+
+function getReplacementCard(player, cardIndex) {
+    if(cardIndex == 0) {
+        game.deck.push(player.firstCard)
+        game.shuffleDeck()
+        player.firstCard = ""
+        player.firstCard = game.deck.pop()
+    } else if (cardIndex == 1) {
+        game.deck.push(player.secondCard)
+        game.shuffleDeck()
+        player.secondCard = ""
+        player.secondCard = game.deck.pop()
+    }
 }
 
 var time = 100;
