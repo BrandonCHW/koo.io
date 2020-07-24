@@ -152,12 +152,7 @@ io.on('connection', (socket) => {
     io.to('room1').emit('state change', new GameStatePayload(game))
 
     socket.on('action', (p) => {
-        /*var done = */handleActionRequest(p)
-        // if (done) {
-        //     game.nextTurn()
-        //     io.to('room1').emit('state change', new GameStatePayload(game))
-        //     // send new game state
-        // }
+        handleActionRequest(p)
     })
 
     socket.on('currentActionResponse', (playerId, response, blockRole) => {
@@ -220,58 +215,6 @@ function handleActionRequest(actionPayload) {
         io.to('room1').emit('loseCard', findPlayerIdByName(actionPayload.to), true, "Player " +  actor.name + " is performing a coup on you! Choose a card to lose.")
         handleCoinChange(actor, -7)
     }
-
-//    switch(actionPayload.intent) {
-//         case "income":
-//             displayText = actor.name + " is performing an income action"
-//             actionRequest = new ActionPayload(actionPayload.id, "income", displayText)
-//             game.actionHistory.push(new ActionLog(actionRequest, "action"))
-//             io.to('room1').emit('action broadcast', actionRequest)
-//             handleCoinChange(actor, 1)
-//             game.nextTurn()
-//             io.to('room1').emit('state change', new GameStatePayload(game))
-//             return true
-//         case "foreign":
-//             displayText = actor.name + " is performing a take foreign aid action"
-//             actionRequest = new ActionPayload(actionPayload.id, "foreign", displayText)
-//             game.actionHistory.push(new ActionLog(actionRequest, "action"))
-//             io.to('room1').emit('action broadcast', actionRequest)
-//             return false
-//         case "coup":
-//             displayText = actor.name + " is performing a coup action on " + actionPayload.to
-//             actionRequest = new ActionPayload(actionPayload.id, "coup", displayText, findPlayerIdByName(actionPayload.to))
-//             game.actionHistory.push(new ActionLog(actionRequest, "action"))
-//             io.to('room1').emit('action broadcast', actionRequest)
-//             io.to('room1').emit('loseCard', findPlayerIdByName(actionPayload.to), true, "Player " +  actor.name + " is performing a coup on you! Choose a card to lose.")
-//             handleCoinChange(actor, -7)
-//             return true
-//         case "tax":
-//             displayText = actor.name + " is performing a tax action"
-//             actionRequest = new ActionPayload(actionPayload.id, "tax", displayText)
-//             game.actionHistory.push(new ActionLog(actionRequest, "action"))
-//             io.to('room1').emit('action broadcast', actionRequest)
-//             return false
-//         case "steal":
-//             displayText = actor.name + " is performing a steal action on " + actionPayload.to
-//             actionRequest = new ActionPayload(actionPayload.id, "steal", displayText, findPlayerIdByName(actionPayload.to))
-//             game.actionHistory.push(new ActionLog(actionRequest, "action"))
-//             io.to('room1').emit('action broadcast', actionRequest)
-//             return false
-//         case "assassinate":
-//             displayText = actor.name + " is performing an assasinate action on " + actionPayload.to
-//             actionRequest = new ActionPayload(actionPayload.id, "assassinate", displayText, findPlayerIdByName(actionPayload.to))
-//             game.actionHistory.push(new ActionLog(actionRequest, "action"))
-//             io.to('room1').emit('action broadcast', actionRequest)
-//             return false
-//         case "exchange":
-//             displayText = actor.name + " is performing an exchange action"
-//             actionRequest = new ActionPayload(actionPayload.id, "exchange", displayText)
-//             game.actionHistory.push(new ActionLog(actionRequest, "action"))
-//             io.to('room1').emit('action broadcast', actionRequest)
-//             return false
-//         default:
-//             break
-//     } 
 }
 
 function processLastAction() {
