@@ -36,6 +36,11 @@ window.onload = () => {
         updatePlayerStatus(p)
     })
 
+    socket.on('found lobby', (roomId) => {
+        console.log(`roomId is ${roomId}`)
+        socket.currentRoomId = roomId
+    })
+
     // Receive timer update (periodically updated)
     socket.on('timer', (time) => {
         updateTimer(time)
@@ -179,6 +184,11 @@ window.onload = () => {
     //TODO remove this later
     $("#startGame").on("click", function() {
         socket.emit('start game')
+    })
+
+    $("#findLobby").on("click", function() {
+        console.log("find lobby")
+        socket.emit('find lobby')
     })
 
     // PASS THE TURN TO THE NEXT PLAYER
