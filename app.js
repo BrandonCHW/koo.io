@@ -172,14 +172,12 @@ io.on('connection', (socket) => {
     //temporary
     socket.on('start game', () => {
         console.log('start game!')
-        console.log(`roomid is ${socket.currentRoomId}`)
 
         game.onBegin()
         io.to(socket.currentRoomId).emit('state change', new GameStatePayload(game))
     })
 
     socket.on('find lobby', () => {
-        console.log('find lobby')
         var roomId = findEmptyRoom()
 
         socket.currentRoomId = roomId
@@ -194,9 +192,6 @@ io.on('connection', (socket) => {
 
         // notify other players of new connection
         io.to(roomId).emit('state change', new GameStatePayload(game))
-
-        console.log(`returning room id ${roomId}`)
-        socket.emit('found lobby', roomId)
     })
 
     socket.on('cardLost', (victimId, cardLost, endTurn) => {
@@ -516,11 +511,8 @@ function findEmptyRoom() {
         return key.startsWith("room") 
     })
 
-    console.log(gameRoomKeys)
-
     for (var roomId in allRooms) {
         if (gameRoomKeys.includes(roomId) && allRooms[roomId].length < MAX_PLAYERS_PER_ROOM) {
-            console.log("found free room " + roomId)
 
             return roomId
         }
