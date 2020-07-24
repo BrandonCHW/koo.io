@@ -292,7 +292,7 @@ function handleActionResponse(playerId, response, blockRole, socket) {
     }
 }
 
-function handleBlockResponse(playerId, response) {
+function handleBlockResponse(playerId, response, socket) {
     switch(response) {
         case "confirm":
             var numberConfirmations = ++game.actionHistory[game.actionHistory.length - 1].confirmations
@@ -463,15 +463,15 @@ function findPlayerIdByName(name) {
 function findEmptyRoom() {
     var allRooms = io.sockets.adapter.rooms
 
+    // Each new connection generates a new room so we have to filter for game rooms 
     var gameRoomKeys = Object.keys(allRooms).filter(key => {
-        return key.startsWith("room") 
+
+        return key.startsWith('room') && allRooms[key].length < MAX_PLAYERS_PER_ROOM
     })
 
-    for (var roomId in allRooms) {
-        if (gameRoomKeys.includes(roomId) && allRooms[roomId].length < MAX_PLAYERS_PER_ROOM) {
+    if (gameRoomKeys.length != 0) {
 
-            return roomId
-        }
+        return gameRoomKeys[Math.floor(Math.random()*gameRoomKeys.length)]
     }
 
     return createNewRoom()
@@ -482,6 +482,8 @@ function createNewRoom() {
     var roomId = Math.floor(Math.random()*10000)
 
     return `room${roomId}`
+}
+
 function getReplacementCard(player, cardIndex) {
     if(cardIndex == 0) {
         game.deck.push(player.firstCard)
@@ -504,4 +506,4 @@ setInterval(function() {
     }
     if (time > 0)
         time--
-},1000)}
+},1000)
