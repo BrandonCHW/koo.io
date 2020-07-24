@@ -173,6 +173,7 @@ io.on('connection', (socket) => {
     })
 
     socket.on('find lobby', () => {
+        leaveCurrentRooms(socket);
         var roomId = findEmptyRoom()
 
         socket.currentRoomId = roomId
@@ -482,6 +483,12 @@ function createNewRoom() {
     var roomId = Math.floor(Math.random()*10000)
 
     return `room${roomId}`
+}
+
+function leaveCurrentRooms(socket) {
+    Object.keys(socket.rooms)
+        .filter(roomId => roomId !== socket.id)
+        .forEach(id => socket.leave(id));
 }
 
 function getReplacementCard(player, cardIndex) {
