@@ -2,6 +2,7 @@ const express = require('express')
 const app = express()
 const http = require('http').createServer(app)
 const io = require('socket.io')(http)
+const { GameStatePayload, GameState, Player, ActionPayload, ActionLog } = require('./server/entities.js')
 
 const PORT = 3000
 const MAX_PLAYERS_PER_ROOM = 4
@@ -32,109 +33,6 @@ http.listen(PORT, () => {
 /*****  GAMEPLAY MANAGEMENT ******/
 ///////////////////////////////////
 const SOCKET_LIST = {}
-
-// TODO may not need this
-class GameStatePayload {
-    constructor(gameState) {
-        this.gameState = gameState
-    }
-}
-
-class GameState {
-    constructor() {
-        this.players = {}
-        this.deck = []
-        this.turn = "" // name of the player who plays during this turn
-        this.tracker = 0 // used to track the turn
-        this.inProgress = false
-        this.actionHistory =[]
-    }
-
-    onDisconnect(id) {
-        delete this.players[id]
-    }
-
-    onBegin() {
-        this.deck = this.fillDeck()
-        this.shuffleDeck()
-        this.dealCards()
-        this.turn = this.players[Object.keys(this.players)[this.tracker]].name //the first player that connected begins...
-        this.inProgress = true
-    }
-
-    nextTurn(nextPlayerName = "") {
-        if (this.inProgress && nextPlayerName === "") {
-            this.tracker = ++this.tracker % Object.keys(this.players).length
-            // this.turn = this.turn = this.players[Object.keys(this.players)[this.tracker]].name
-            this.turn = this.players[Object.keys(this.players)[this.tracker]].name
-        } else {
-            this.turn = nextPlayerName
-        }
-    }
-
-    fillDeck() {
-        return [
-            "Duke","Duke","Duke",
-            "Assassin","Assassin","Assassin",
-            "Captain","Captain","Captain",
-            "Ambassador","Ambassador","Ambassador",
-            "Contessa","Contessa","Contessa"
-        ]
-    }
-
-    // Fisher-Yates Algorithm
-    shuffleDeck() {
-        var a = this.deck        
-        for (let i = a.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [a[i], a[j]] = [a[j], a[i]];
-        }
-        this.deck = a
-    }
-
-    //TODO Move this in a service later
-    //Deals 2 cards to every player 
-    dealCards() {
-        for(var id in this.players) {
-            var player = this.players[id]
-            player.firstCard = this.deck.pop()
-            player.firstCardAlive = true
-            player.secondCard = this.deck.pop()
-            player.secondCardAlive = true
-        }
-    }
-}
-
-class Player {
-    constructor(id) {
-        this.name = parseInt(Math.ceil(Math.random()*100)) // random number for now
-        this.coins = 2
-        this.firstCard = "card1"
-        this.firstCardAlive = false
-        this.secondCard= "card2"
-        this.secondCardAlive = false
-    }
-}
-
-class ActionPayload {
-    //Action payload destined to be sent to the client
-    constructor(actorId, intent, displayText="", victimId="") {
-        this.actorId = actorId
-        this.intent = intent
-        this.victimId = victimId
-        this.displayText = displayText
-    }
-}
-
-class ActionLog extends ActionPayload {
-    //Stores information serverside about a move in game.actionHistory
-    constructor(actionPayload, type, confirmations = 0) {
-        super(actionPayload.actorId, actionPayload.intent, actionPayload.displayText, actionPayload.victimId)
-        this.type = type
-        this.confirmations = confirmations
-    }
-}
-
 // Create new game (only 1 lobby)
 var game = new GameState()
 
@@ -167,12 +65,12 @@ io.on('connection', (socket) => {
     //temporary
     socket.on('start game', () => {
         console.log('start game!')
-
         game.onBegin()
         io.to(socket.currentRoomId).emit('state change', new GameStatePayload(game))
     })
 
     socket.on('find lobby', () => {
+        leaveCurrentRooms(socket);
         var roomId = findEmptyRoom()
 
         socket.currentRoomId = roomId
@@ -482,6 +380,12 @@ function createNewRoom() {
     var roomId = Math.floor(Math.random()*10000)
 
     return `room${roomId}`
+}
+
+function leaveCurrentRooms(socket) {
+    Object.keys(socket.rooms)
+        .filter(roomId => roomId !== socket.id)
+        .forEach(id => socket.leave(id));
 }
 
 function getReplacementCard(player, cardIndex) {
