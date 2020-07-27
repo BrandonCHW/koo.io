@@ -93,8 +93,6 @@ io.on('connection', (socket) => {
 
     socket.on('execute exchange', (selected, unselected) => {
         exchangeCards(socket.id, selected, unselected, socket)
-        game.nextTurn()
-        io.to(socket.currentRoomId).emit('state change', new GameStatePayload(game))
     })
 });
 
@@ -152,10 +150,10 @@ function processLastAction(socket) {
             break
         case "assassinate":
             handleCoinChange(actor, -3)
-            handleAssassinate(actor.name, currentAction.victimId)
+            handleAssassinate(actor.name, currentAction.victimId, socket)
             break
         case "exchange":
-            handleExchangeRequest(currentAction.actorId)
+            handleExchangeRequest(currentAction.actorId, socket)
             break
         default:
             break
@@ -333,7 +331,6 @@ function handleExchangeRequest(id, socket) {
     selection.push(game.deck.pop())
     selection.push(game.deck.pop())
 
-    game.nextTurn()
     io.to(socket.currentRoomId).emit('exchange', id, selection)
 }
 
