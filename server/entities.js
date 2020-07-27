@@ -59,6 +59,10 @@ class GameState {
             player.secondCardAlive = true
         }
     }
+    
+    findPlayerIdByName(name) {
+        return Object.keys(this.players).find(key => this.players[key].name.toString() === name)
+    }
 }
 
 class Player {

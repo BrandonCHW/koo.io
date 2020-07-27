@@ -108,7 +108,7 @@ function handleActionRequest(actionPayload, socket) {
         displayText = actor.name + " is performing " + actionPayload.intent + " on " + actionPayload.to
         actionRequest = new ActionPayload(actionPayload.id, actionPayload.intent, displayText)
     }
-    actionRequest = new ActionPayload(actionPayload.id, actionPayload.intent, displayText, findPlayerIdByName(actionPayload.to))
+    actionRequest = new ActionPayload(actionPayload.id, actionPayload.intent, displayText, game.findPlayerIdByName(actionPayload.to))
     game.actionHistory.push(new ActionLog(actionRequest, "action"))
     io.to(socket.currentRoomId).emit('action broadcast', actionRequest)
 
@@ -117,7 +117,7 @@ function handleActionRequest(actionPayload, socket) {
         game.nextTurn()
         io.to(socket.currentRoomId).emit('state change', new GameStatePayload(game))
     } else if (actionPayload.intent == "coup") {
-        io.to(socket.currentRoomId).emit('loseCard', findPlayerIdByName(actionPayload.to), true, "Player " +  actor.name + " is performing a coup on you! Choose a card to lose.")
+        io.to(socket.currentRoomId).emit('loseCard', game.findPlayerIdByName(actionPayload.to), true, "Player " +  actor.name + " is performing a coup on you! Choose a card to lose.")
         handleCoinChange(actor, -7)
     }
 }
@@ -352,10 +352,6 @@ function exchangeCards(id, selected, unselected, socket) {
     // TODO: Move somewhere else?
     game.nextTurn()
     io.to(socket.currentRoomId).emit('state change', new GameStatePayload(game))
-}
-
-function findPlayerIdByName(name) {
-    return Object.keys(game.players).find(key => game.players[key].name.toString() === name)
 }
 
 function findEmptyRoom() {
