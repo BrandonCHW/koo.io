@@ -182,7 +182,8 @@ window.onload = () => {
     })
 
     $("#findLobby").on("click", function() {
-        socket.emit('find lobby')
+        var playerName = document.getElementById('playerNameInput').value
+        socket.emit('find lobby', playerName)
     })
 
     // PASS THE TURN TO THE NEXT PLAYER

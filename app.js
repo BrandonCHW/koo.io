@@ -69,7 +69,7 @@ io.on('connection', (socket) => {
         io.to(socket.currentRoomId).emit('state change', new GameStatePayload(game))
     })
 
-    socket.on('find lobby', () => {
+    socket.on('find lobby', (playerName) => {
         leaveCurrentRooms(socket);
         var roomId = findEmptyRoom()
 
@@ -77,7 +77,7 @@ io.on('connection', (socket) => {
         socket.join(roomId)
 
         SOCKET_LIST[socket.id] = socket
-        game.players[socket.id] = new Player(socket.id)
+        game.players[socket.id] = new Player(socket.id, playerName)
 
         //send player identity
         var initialState = game.players[socket.id]
