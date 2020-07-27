@@ -54,7 +54,7 @@ window.onload = () => {
             }
             //If the action is other than income, coup or foreign, can challenge
             else if (actionPayload.intent != "income" && actionPayload.intent != "coup") {
-                $('#reaction').append(`<button class="reactionSel" id="challenge reaction" value="challenge">Challenge</button>`)
+                $('#reaction').append(`<button class="reactionSel" id="challenge-reaction" value="challenge">Challenge</button>`)
             }
 
             //If the action is assassinate and the player is the target, can claim contessa
