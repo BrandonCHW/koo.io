@@ -104,7 +104,6 @@ function handleActionRequest(actionPayload, socket) {
         displayText = actor.name + " is performing " + actionPayload.intent
     } else {
         displayText = actor.name + " is performing " + actionPayload.intent + " on " + actionPayload.to
-        actionRequest = new ActionPayload(actionPayload.id, actionPayload.intent, displayText)
     }
     actionRequest = new ActionPayload(actionPayload.id, actionPayload.intent, displayText, findPlayerIdByName(actionPayload.to))
     game.actionHistory.push(new ActionLog(actionRequest, "action"))
