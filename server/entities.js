@@ -66,8 +66,8 @@ class GameState {
 }
 
 class Player {
-    constructor(id) {
-        this.name = parseInt(Math.ceil(Math.random()*100)) // random number for now
+    constructor(id, name) {
+        this.name = name
         this.coins = 2
         this.firstCard = "card1"
         this.firstCardAlive = false

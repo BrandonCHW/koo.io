@@ -69,7 +69,7 @@ io.on('connection', (socket) => {
         io.to(socket.currentRoomId).emit('state change', new GameStatePayload(game))
     })
 
-    socket.on('find lobby', () => {
+    socket.on('find lobby', (playerName) => {
         leaveCurrentRooms(socket);
         var roomId = findEmptyRoom()
 
@@ -77,7 +77,7 @@ io.on('connection', (socket) => {
         socket.join(roomId)
 
         SOCKET_LIST[socket.id] = socket
-        game.players[socket.id] = new Player(socket.id)
+        game.players[socket.id] = new Player(socket.id, playerName)
 
         //send player identity
         var initialState = game.players[socket.id]
@@ -93,8 +93,6 @@ io.on('connection', (socket) => {
 
     socket.on('execute exchange', (selected, unselected) => {
         exchangeCards(socket.id, selected, unselected, socket)
-        game.nextTurn()
-        io.to(socket.currentRoomId).emit('state change', new GameStatePayload(game))
     })
 });
 
@@ -106,7 +104,6 @@ function handleActionRequest(actionPayload, socket) {
         displayText = actor.name + " is performing " + actionPayload.intent
     } else {
         displayText = actor.name + " is performing " + actionPayload.intent + " on " + actionPayload.to
-        actionRequest = new ActionPayload(actionPayload.id, actionPayload.intent, displayText)
     }
     actionRequest = new ActionPayload(actionPayload.id, actionPayload.intent, displayText, game.findPlayerIdByName(actionPayload.to))
     game.actionHistory.push(new ActionLog(actionRequest, "action"))
@@ -152,10 +149,10 @@ function processLastAction(socket) {
             break
         case "assassinate":
             handleCoinChange(actor, -3)
-            handleAssassinate(actor.name, currentAction.victimId)
+            handleAssassinate(actor.name, currentAction.victimId, socket)
             break
         case "exchange":
-            handleExchangeRequest(currentAction.actorId)
+            handleExchangeRequest(currentAction.actorId, socket)
             break
         default:
             break
@@ -333,7 +330,6 @@ function handleExchangeRequest(id, socket) {
     selection.push(game.deck.pop())
     selection.push(game.deck.pop())
 
-    game.nextTurn()
     io.to(socket.currentRoomId).emit('exchange', id, selection)
 }
 
