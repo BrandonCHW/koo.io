@@ -87,8 +87,8 @@ io.on('connection', (socket) => {
         io.to(roomId).emit('state change', new GameStatePayload(game))
     })
 
-    socket.on('cardLost', (victimId, cardLost, endTurn) => {
-        handleCardLoss(victimId, cardLost, endTurn, socket)
+    socket.on('cardLost', (victimId, cardLost) => {
+        handleCardLoss(victimId, cardLost, socket)
     })
 
     socket.on('execute exchange', (selected, unselected) => {
@@ -114,20 +114,13 @@ function handleActionRequest(actionPayload, socket) {
         game.nextTurn()
         io.to(socket.currentRoomId).emit('state change', new GameStatePayload(game))
     } else if (actionPayload.intent == "coup") {
-        io.to(socket.currentRoomId).emit('loseCard', findPlayerIdByName(actionPayload.to), true, "Player " +  actor.name + " is performing a coup on you! Choose a card to lose.")
+        io.to(findPlayerIdByName(actionPayload.to)).emit('loseCard', "Player " +  actor.name + " is performing a coup on you! Choose a card to lose.")
         handleCoinChange(actor, -7)
     }
 }
 
 function processLastAction(socket) {
-    var currentAction
-    //Find the last action to execute in the action history
-    for (var i = game.actionHistory.length - 1; i >= 0; --i) {
-        if (game.actionHistory[i].type == "action") {
-            currentAction = game.actionHistory[i]
-            break;
-        }
-    }
+    var currentAction = getLastAction()
     var action = currentAction.intent
     var actor = game.players[currentAction.actorId]
     switch(action) {
@@ -210,7 +203,6 @@ function handleBlockResponse(playerId, response, socket) {
     }
 }
 
-//TODO: [bug] turn might revert to another player before the other player can choose to lose his card
 function handleChallengeRequests(challengedId, challengerId, cardIndex, expectedCardType, socket) {
     challenged = game.players[challengedId]
     if(cardIndex == 0) {
@@ -219,12 +211,12 @@ function handleChallengeRequests(challengedId, challengerId, cardIndex, expected
             getReplacementCard(challenged, cardIndex)
             //If the last move logged was an action, execute it (ie: the player who performs the action actually had the corresponding role)
             if(game.actionHistory[game.actionHistory.length - 2].type == "action") {
-                processLastAction(socket)
-                io.to(socket.currentRoomId).emit('loseCard', challengerId, false, "Player " +  challenged.name + " was really a " + expectedCardType + "! You have lost the challenge, choose a card to lose.")
+                game.currentActionToExecute = getLastAction()
+                io.to(challengerId).emit('loseCard', "Player " +  challenged.name + " was really a " + expectedCardType + "! You have lost the challenge, choose a card to lose.")
             }
             //Else if the last move logged as a block, end the turn (ie: the player who blocked actually had the required role to block)
             else if(game.actionHistory[game.actionHistory.length - 2].type == "block") {
-                io.to(socket.currentRoomId).emit('loseCard', challengerId, true, "Player " +  challenged.name + " was really a " + expectedCardType + "! You have lost the challenge, choose a card to lose.")
+                io.to(challengerId).emit('loseCard', "Player " +  challenged.name + " was really a " + expectedCardType + "! You have lost the challenge, choose a card to lose.")
             }
         //The challenged lied
         } else {
@@ -245,12 +237,12 @@ function handleChallengeRequests(challengedId, challengerId, cardIndex, expected
             getReplacementCard(challenged, cardIndex)
             //If the last move logged before the challenge was an action, execute it (ie: the player who performs the action actually had the corresponding role)
             if(game.actionHistory[game.actionHistory.length - 2].type == "action") {
-                processLastAction(socket)
-                io.to(socket.currentRoomId).emit('loseCard', challengerId, false, "Player " +  challenged.name + " was really a " + expectedCardType + "! You have lost the challenge, choose a card to lose.")
+                game.currentActionToExecute = getLastAction()
+                io.to(challengerId).emit('loseCard', "Player " +  challenged.name + " was really a " + expectedCardType + "! You have lost the challenge, choose a card to lose.")
             }
             //Else if the last move before the challenge logged was a block, end the turn (ie: the player who blocked actually had the required role to block)
             else if(game.actionHistory[game.actionHistory.length - 2].type == "block") {
-                io.to(socket.currentRoomId).emit('loseCard', challengerId, true, "Player " +  challenged.name + " was really a " + expectedCardType + "! You have lost the challenge, choose a card to lose.")
+                io.to(challengerId).emit('loseCard', "Player " +  challenged.name + " was really a " + expectedCardType + "! You have lost the challenge, choose a card to lose.")
             }
         //The challenged lied
         } else {
@@ -299,13 +291,13 @@ function handleSteal(actor, victimId) {
 function handleAssassinate(actorName, victimId, socket) {
     var victim = game.players[victimId]
     if (victim) {
-        io.to(socket.currentRoomId).emit('loseCard', victimId, true, "Player " +  actorName + " has successfully assassinated you! Choose a card to lose.")
+        io.to(victimId).emit('loseCard', "Player " +  actorName + " has successfully assassinated you! Choose a card to lose.")
     } else {
         console.log('cannot find victim')
     }
 }
 
-function handleCardLoss(id, cardIndex, endTurn, socket) {
+function handleCardLoss(id, cardIndex, socket) {
     victim = game.players[id]
     if(cardIndex == 0) {
         victim.firstCardAlive = false
@@ -314,9 +306,12 @@ function handleCardLoss(id, cardIndex, endTurn, socket) {
     }
     //TODO: Handle if player dies (no more cards alive)
 
-    if(endTurn)
+    if (game.currentActionToExecute != "") {
+        processLastAction(socket)
+    } else {
         game.nextTurn()
-    io.to(socket.currentRoomId).emit('state change', new GameStatePayload(game))
+        io.to(socket.currentRoomId).emit('state change', new GameStatePayload(game))
+    }
 }
 
 function handleExchangeRequest(id, socket) {    
@@ -396,6 +391,15 @@ function getReplacementCard(player, cardIndex) {
         player.secondCard = ""
         player.secondCard = game.deck.pop()
     }
+}
+
+function getLastAction() {
+    for (var i = game.actionHistory.length - 1; i >= 0; --i) {
+        if (game.actionHistory[i].type == "action") {
+            return game.actionHistory[i]
+        }
+    }
+    //Return error message
 }
 
 var time = 100;
