@@ -1,7 +1,7 @@
 class Action {
     constructor() {
         if (this.constructor === Action) {
-            throw new Error("Invalid instantiation - Abstract Class")
+            throw new Error("Can't instanciate an abstract class")
         }
         this.name = ""
     }
