@@ -12,7 +12,7 @@ class Action {
 
     // owner: 'Player' type object that owns the action
     // target: 'Player' who this action is targeted against (optional)
-    execute(owner, target=undefined) { throw new Error("Not Implemented execute") }
+    execute(owner, target=undefined) { throw new Error("Not Implemented execute()") }
 }
 
 class Income extends Action {
@@ -21,7 +21,6 @@ class Income extends Action {
     }
 
     execute(owner) {
-        owner.
     }
 }
 
@@ -88,7 +87,7 @@ class Card {
         }
     }
 
-    canDoAction(action) {
+    canExecute(action) {
         for (var a in this.actions) {
             if (a.compare(action)) {
                 return true
@@ -98,29 +97,32 @@ class Card {
     }
 }
 
-
 class Ambassador extends Card {    
     constructor() {
-        this.action = 
+        this.actions = [ new Exchange(), new BlockStealing() ]
     }
 } 
 
 class Assassin extends Card {
     constructor() {
+        this.actions = [ new Assassinate() ]
     }
 }
 
 class Captain extends Card {
     constructor() {
+        this.actions = [ new Steal(), new BlockStealing() ]
     }
 }
 
 class Contessa extends Card {
     constructor() {
+        this.actions = [ new BlockAssassination() ]
     }
 }
 
 class Duke extends Card {
     constructor() {
+        this.actions = [ new Tax(), new BlockForeignAid() ]
     }
 }
