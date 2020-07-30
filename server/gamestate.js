@@ -1,3 +1,5 @@
+const { Ambassador, Assassin, Captain, Contessa, Duke } = require('../common/card')
+
 class GameState {
     constructor() {
         this.players = {}

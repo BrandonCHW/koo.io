@@ -162,3 +162,6 @@ class Duke extends Card {
         this.actions = [ new Tax(), new BlockForeignAid() ]
     }
 }
+
+module.exports = { Income, ForeignAid, Tax, Steal, Assassinate, Exchange, Coup,
+    BlockForeignAid, BlockStealing, BlockAssassination, Ambassador, Assassin, Captain, Contessa, Duke }
