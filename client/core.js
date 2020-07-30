@@ -1,5 +1,4 @@
 window.onload = () => {
-
     class ActionPayload { 
         constructor(intent, to="") {
             this.id = socket.id
@@ -209,9 +208,9 @@ window.onload = () => {
         playerCoins = p.coins
         $("#playerName").text(p.name)
         $("#pCoins").text(p.coins)
-        $("#pCard1Name").text(p.firstCard)
+        $("#pCard1Name").text(p.firstCard.name)
         $("#pCard1Alive").text(p.firstCardAlive)
-        $("#pCard2Name").text(p.secondCard)
+        $("#pCard2Name").text(p.secondCard.name)
         $("#pCard2Alive").text(p.secondCardAlive)
         limitPlayerActions()
     }
@@ -244,9 +243,9 @@ window.onload = () => {
         for(const id in otherPlayers) {
             const other = otherPlayers[id]
             otherSection.append(`<p>Name: ${other.name}; 
-                Card1: ${other.firstCard} 
+                Card1: ${other.firstCard.name} 
                 (${other.firstCardAlive}); 
-                Card2: ${other.secondCard} 
+                Card2: ${other.secondCard.name} 
                 (${other.secondCardAlive}); 
                 Coins: ${other.coins}</p>`)
     
