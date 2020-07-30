@@ -10,7 +10,9 @@ class Action {
         return this.name === action.name
     }
 
-    execute() { throw new Error("Not Implemented execute") }
+    // owner: 'Player' type object that owns the action
+    // target: 'Player' who this action is targeted against (optional)
+    execute(owner, target=undefined) { throw new Error("Not Implemented execute") }
 }
 
 class Income extends Action {
@@ -18,44 +20,62 @@ class Income extends Action {
         this.name = "Income"
     }
 
-    execute() {
-        
+    execute(owner) {
+        owner.
     }
 }
 
 class ForeignAid extends Action {
     constructor() {
-        this.name = Income
+        this.name = "Foreign"
     }
 }
 
 class Tax extends Action {
     constructor() {
-        this.name = Income
+        this.name = "Tax"
     }
 }
 
 class Steal extends Action {
     constructor() {
-        this.name = Income
+        this.name = "Steal"
     }
 }
 
 class Assassinate extends Action {
     constructor() {
-        this.name = Income
+        this.name = "Assassinate"
     }
 }
 
 class Exchange extends Action {
     constructor() {
-        this.name = Income
+        this.name = "Exchange"
     }
 }
 
 class Coup extends Action {
     constructor() {
-        this.name = Income
+        this.name = "Coup"
+    }
+}
+
+class BlockForeignAid extends Action {
+    constructor() {
+        this.name = "BlockForeignAid"
+    }
+}
+
+class BlockStealing extends Action {
+    constructor() {
+        this.name = "BlockStealing"
+    }
+}
+
+class BlockAssassination extends Action {
+    constructor() {
+        this.name = "BlockAssassination"
     }
 }
 
