@@ -26,7 +26,6 @@ class GameState {
     nextTurn(nextPlayerName = "") {
         if (this.inProgress && nextPlayerName === "") {
             this.tracker = ++this.tracker % Object.keys(this.players).length
-            // this.turn = this.turn = this.players[Object.keys(this.players)[this.tracker]].name
             this.currentActionToExecute = ""
             this.turn = this.players[Object.keys(this.players)[this.tracker]].name
         } else {
