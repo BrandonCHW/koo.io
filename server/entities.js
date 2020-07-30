@@ -6,6 +6,7 @@ class GameState {
         this.tracker = 0 // used to track the turn
         this.inProgress = false
         this.currentActionToExecute =""
+        this.actionHistory = []
     }
 
     onDisconnect(id) {

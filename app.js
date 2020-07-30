@@ -56,6 +56,7 @@ io.on('connection', (socket) => {
 
     socket.on('disconnect', () => {
         delete SOCKET_LIST[socket.id]
+        console.log(socket.currentRoomId)
         game[socket.currentRoomId].onDisconnect(socket.id)
 
         //notify other players of disconnection
@@ -83,6 +84,7 @@ io.on('connection', (socket) => {
         var initialState = game[socket.currentRoomId].players[socket.id]
         io.to(socket.id).emit('self connection', initialState)
 
+        console.log(game)
         // notify other players of new connection
         io.to(roomId).emit('state change', new GameStatePayload(game[socket.currentRoomId]))
     })
@@ -105,7 +107,7 @@ function handleActionRequest(actionPayload, socket) {
     } else {
         displayText = actor.name + " is performing " + actionPayload.intent + " on " + actionPayload.to
     }
-    actionRequest = new ActionPayload(actionPayload.id, actionPayload.intent, displayText, findPlayerIdByName(actionPayload.to))
+    actionRequest = new ActionPayload(actionPayload.id, actionPayload.intent, displayText, game[socket.currentRoomId].findPlayerIdByName(actionPayload.to))
     game[socket.currentRoomId].actionHistory.push(new ActionLog(actionRequest, "action"))
     io.to(socket.currentRoomId).emit('action broadcast', actionRequest)
 
@@ -114,7 +116,7 @@ function handleActionRequest(actionPayload, socket) {
         game[socket.currentRoomId].nextTurn()
         io.to(socket.currentRoomId).emit('state change', new GameStatePayload(game[socket.currentRoomId]))
     } else if (actionPayload.intent == "coup") {
-        io.to(findPlayerIdByName(actionPayload.to)).emit('loseCard', "Player " +  actor.name + " is performing a coup on you! Choose a card to lose.")
+        io.to(game[socket.currentRoomId].findPlayerIdByName(actionPayload.to)).emit('loseCard', "Player " +  actor.name + " is performing a coup on you! Choose a card to lose.")
         handleCoinChange(actor, -7)
     }
 }
