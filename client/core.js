@@ -45,6 +45,7 @@ window.onload = () => {
         updateCurrentMove(actionPayload.displayText)
         //The player who initiated the action can't challenge or block himself/herself
         if(playerId != actionPayload.actorId) {
+            clearReactionTab()
             $('#reaction').css("display", "block")
             $('#reaction').append(`<button class="reactionSel" value="confirm">Confirm</button>`)
 
@@ -72,6 +73,7 @@ window.onload = () => {
 
     socket.on('block broadcast', (actionPayload) => {
         updateCurrentMove(actionPayload.displayText)
+        clearReactionTab()
         //The player who claimed a role to block an action can't challenge himself/herself
         if(playerId != actionPayload.actorId) {
             $('#reaction').css("display", "block")
@@ -117,20 +119,17 @@ window.onload = () => {
                 $(".cardSelectBtn").off("click")
                 socket.emit('challengeVerification', playerId, actionPayload.actorId, event.target.value, expectedCardType)
             })
-            // selectCard('challengeVerification', event.target, challengeOpts))
         }
     })
 
-    socket.on('loseCard', (victimId, endTurn, message) => {
-        if(playerId === victimId) {
-            updateCardSelectMessage(message)
-            // TODO: Change target.textContent for a more secure id
-            $(".cardSelectBtn").on("click", (event) => {
-                $('#cardSelect').css("display", "none")
-                $(".cardSelectBtn").off("click")
-                socket.emit('cardLost', playerId, event.target.value, endTurn)
-            })
-        }
+    socket.on('loseCard', (message) => {
+        updateCardSelectMessage(message)
+        // TODO: Change target.textContent for a more secure id
+        $(".cardSelectBtn").on("click", (event) => {
+            $('#cardSelect').css("display", "none")
+            $(".cardSelectBtn").off("click")
+            socket.emit('cardLost', playerId, event.target.value)
+        })
     })
 
     socket.on('exchange', (id, selection) => {

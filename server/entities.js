@@ -5,7 +5,7 @@ class GameState {
         this.turn = "" // name of the player who plays during this turn
         this.tracker = 0 // used to track the turn
         this.inProgress = false
-        this.actionHistory =[]
+        this.currentActionToExecute =""
     }
 
     onDisconnect(id) {
@@ -24,6 +24,7 @@ class GameState {
         if (this.inProgress && nextPlayerName === "") {
             this.tracker = ++this.tracker % Object.keys(this.players).length
             // this.turn = this.turn = this.players[Object.keys(this.players)[this.tracker]].name
+            this.currentActionToExecute = ""
             this.turn = this.players[Object.keys(this.players)[this.tracker]].name
         } else {
             this.turn = nextPlayerName
