@@ -53,7 +53,7 @@ io.on('connection', (socket) => {
         socket.join(roomId)
 
         SOCKET_LIST[socket.id] = socket
-        allGames[socket.currentRoomId].players[socket.id] = new Player(socket.id, playerName)
+        allGames[socket.currentRoomId].players[socket.id] = new Player(playerName)
 
         //send player identity
         var initialState = allGames[socket.currentRoomId].players[socket.id]

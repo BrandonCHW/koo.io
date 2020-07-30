@@ -1,10 +1,10 @@
 class Player {
-    constructor(id, name) {
+    constructor(name) {
         this.name = name
         this.coins = 2
-        this.firstCard = "card1"
+        this.firstCard = {}
         this.firstCardAlive = false
-        this.secondCard= "card2"
+        this.secondCard= {}
         this.secondCardAlive = false
     }
 }
