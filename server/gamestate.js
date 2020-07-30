@@ -35,7 +35,11 @@ class GameState {
     fillDeck() {
         var deck = []
         for (var i = 0; i < 3; i++) {
-            deck.push("Duke", "Assassin", "Captain", "Ambassador", "Contessa")
+            deck.push(new Ambassador())
+            deck.push(new Assassin())
+            deck.push(new Captain())
+            deck.push(new Contessa())
+            deck.push(new Duke())
         }
         return deck
     }
