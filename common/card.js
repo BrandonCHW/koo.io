@@ -1,9 +1,9 @@
 class Action {
     constructor() {
         if (this.constructor() === Action) {
-            this.name = ""
             throw new Error("Invalid instantiation - Abstract Class")
         }
+        this.name = ""
     }
 
     compare(action) {
@@ -17,6 +17,7 @@ class Action {
 
 class Income extends Action {
     constructor() {
+        super()
         this.name = "Income"
     }
 
@@ -26,6 +27,7 @@ class Income extends Action {
 
 class ForeignAid extends Action {
     constructor() {
+        super()
         this.name = "Foreign"
     }
     
@@ -36,6 +38,7 @@ class ForeignAid extends Action {
 
 class Tax extends Action {
     constructor() {
+        super()
         this.name = "Tax"
     }
     
@@ -45,6 +48,7 @@ class Tax extends Action {
 
 class Steal extends Action {
     constructor() {
+        super()
         this.name = "Steal"
     }
     
@@ -54,6 +58,7 @@ class Steal extends Action {
 
 class Assassinate extends Action {
     constructor() {
+        super()
         this.name = "Assassinate"
     }
     
@@ -63,6 +68,7 @@ class Assassinate extends Action {
 
 class Exchange extends Action {
     constructor() {
+        super()
         this.name = "Exchange"
     }
     
@@ -72,6 +78,7 @@ class Exchange extends Action {
 
 class Coup extends Action {
     constructor() {
+        super()
         this.name = "Coup"
     }
     
@@ -81,6 +88,7 @@ class Coup extends Action {
 
 class BlockForeignAid extends Action {
     constructor() {
+        super()
         this.name = "BlockForeignAid"
     }
     
@@ -90,6 +98,7 @@ class BlockForeignAid extends Action {
 
 class BlockStealing extends Action {
     constructor() {
+        super()
         this.name = "BlockStealing"
     }
     
@@ -99,6 +108,7 @@ class BlockStealing extends Action {
 
 class BlockAssassination extends Action {
     constructor() {
+        super()
         this.name = "BlockAssassination"
     }
     
@@ -109,11 +119,11 @@ class BlockAssassination extends Action {
 // Abstract
 class Card {
     constructor() {
-        if (this.constructor() === Card) {
-            this.name = ""
-            this.action = [] // will be an array of Powers
-            console.log("Invalid instantiation - Abstract Class")
+        if (this.constructor === Card) {
+            throw new Error("Can't instanciate an abstract class")
         }
+        this.name = ""
+        this.action = [] // will be an array of Powers
     }
 
     canExecute(action) {
@@ -130,6 +140,7 @@ class Card {
 //TODO change action objects to something static
 class Ambassador extends Card {    
     constructor() {
+        super()
         this.name = "Ambassador"
         this.actions = [ new Exchange(), new BlockStealing() ]
     }
@@ -137,6 +148,7 @@ class Ambassador extends Card {
 
 class Assassin extends Card {
     constructor() {
+        super()
         this.name = "Assassin"
         this.actions = [ new Assassinate() ]
     }
@@ -144,6 +156,7 @@ class Assassin extends Card {
 
 class Captain extends Card {
     constructor() {
+        super()
         this.name = "Captain"
         this.actions = [ new Steal(), new BlockStealing() ]
     }
@@ -151,6 +164,7 @@ class Captain extends Card {
 
 class Contessa extends Card {
     constructor() {
+        super()
         this.name = "Contessa"
         this.actions = [ new BlockAssassination() ]
     }
@@ -158,6 +172,7 @@ class Contessa extends Card {
 
 class Duke extends Card {
     constructor() {
+        super()
         this.name = "Duke"
         this.actions = [ new Tax(), new BlockForeignAid() ]
     }
