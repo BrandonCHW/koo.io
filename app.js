@@ -3,7 +3,9 @@ const app = express()
 const http = require('http').createServer(app)
 const io = require('socket.io')(http)
 
-const { GameStatePayload, GameState, Player, ActionPayload, ActionLog } = require('./server/entities.js')
+const GameState = require('./server/gamestate')
+const Player = require('./server/player')
+const { GameStatePayload, ActionPayload, ActionLog } = require('./server/payloads')
 const LobbyManager = require('./server/lobby')
 
 const PORT = 3000
