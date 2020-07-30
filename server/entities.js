@@ -5,7 +5,7 @@ class GameState {
         this.turn = "" // name of the player who plays during this turn
         this.tracker = 0 // used to track the turn
         this.inProgress = false
-        this.currentActionToExecute =""
+        this.currentActionToExecute = ""
         this.actionHistory = []
     }
 
