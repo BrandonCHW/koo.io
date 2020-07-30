@@ -1,6 +1,6 @@
 class Action {
     constructor() {
-        if (this.constructor() === Action) {
+        if (this.constructor === Action) {
             throw new Error("Invalid instantiation - Abstract Class")
         }
         this.name = ""
@@ -12,7 +12,7 @@ class Action {
 
     // owner: 'Player' type object that owns the action
     // target: 'Player' who this action is targeted against (optional)
-    execute() { throw new Error("Not Implemented execute()") }
+    execute() { throw new Error("Not Implemented execute") }
 }
 
 class Income extends Action {
