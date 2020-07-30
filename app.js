@@ -2,10 +2,11 @@ const express = require('express')
 const app = express()
 const http = require('http').createServer(app)
 const io = require('socket.io')(http)
+
 const { GameStatePayload, GameState, Player, ActionPayload, ActionLog } = require('./server/entities.js')
+const LobbyManager = require('./server/lobby')
 
 const PORT = 3000
-const MAX_PLAYERS_PER_ROOM = 4
 
 ///////////////////////
 /*****  ROUTING ******/
@@ -38,8 +39,13 @@ var allGames = {}
 
 io.on('connection', (socket) => {    
     socket.on('find lobby', (playerName) => {
-        leaveCurrentRooms(socket);
-        var roomId = findEmptyRoom()
+        LobbyManager.leaveCurrentRooms(socket);
+        var roomId = LobbyManager.findEmptyRoom(io)
+        
+        // TODo Bouger a un objet 'CurrentState' quand le refactor va etre fait
+        if(!(roomId in allGames)) {
+            allGames[roomId] = new GameState()
+        }
 
         socket.currentRoomId = roomId
         socket.join(roomId)
@@ -57,10 +63,16 @@ io.on('connection', (socket) => {
 
     socket.on('disconnect', () => {
         delete SOCKET_LIST[socket.id]
-        console.log(socket.currentRoomId)
         allGames[socket.currentRoomId].onDisconnect(socket.id)
 
         //notify other players of disconnection
+        io.to(socket.currentRoomId).emit('state change', new GameStatePayload(allGames[socket.currentRoomId]))
+    })
+    
+    //temporary
+    socket.on('start game', () => {
+        console.log(`${socket.currentRoomId} - start game!`)
+        allGames[socket.currentRoomId].onBegin()
         io.to(socket.currentRoomId).emit('state change', new GameStatePayload(allGames[socket.currentRoomId]))
     })
 
@@ -87,14 +99,6 @@ io.on('connection', (socket) => {
     socket.on('execute exchange', (selected, unselected) => {
         exchangeCards(socket.id, selected, unselected, socket)
     })
-
-    //temporary
-    socket.on('start game', () => {
-        console.log('start game!')
-        allGames[socket.currentRoomId].onBegin()
-        io.to(socket.currentRoomId).emit('state change', new GameStatePayload(allGames[socket.currentRoomId]))
-    })
-
 });
 
 function handleActionRequest(actionPayload, socket) {
@@ -346,43 +350,6 @@ function exchangeCards(id, selected, unselected, socket) {
     io.to(socket.currentRoomId).emit('state change', new GameStatePayload(allGames[socket.currentRoomId]))
 }
 
-function findEmptyRoom() {
-    var allRooms = io.sockets.adapter.rooms
-
-    // Each new connection generates a new room so we have to filter for game rooms 
-    var gameRoomKeys = Object.keys(allRooms).filter(key => {
-
-        return key.startsWith('room') && allRooms[key].length < MAX_PLAYERS_PER_ROOM
-    })
-
-    if (gameRoomKeys.length != 0) {
-
-        return gameRoomKeys[Math.floor(Math.random()*gameRoomKeys.length)]
-    }
-
-    return createNewRoom()
-}
-
-function createNewRoom() {
-    //TODO generate real uid\
-    var roomId = Math.floor(Math.random()*100000)
-    var newRoom = `room${roomId}`
-    createNewGameState(newRoom)
-
-    return newRoom
-}
-
-function createNewGameState(newRoom) {
-    if(!(newRoom in allGames)) {
-        allGames[newRoom] = new GameState()
-    }
-}
-
-function leaveCurrentRooms(socket) {
-    Object.keys(socket.rooms)
-        .filter(roomId => roomId !== socket.id)
-        .forEach(id => socket.leave(id));
-}
 
 function getReplacementCard(player, cardIndex, socket) {
     if(cardIndex == 0) {
