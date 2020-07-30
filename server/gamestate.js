@@ -16,7 +16,7 @@ class GameState {
     }
 
     onBegin() {
-        this.deck = this.fillDeck()
+        this.deck = this.fillDeck(3)
         this.shuffleDeck()
         this.dealCards()
         this.turn = this.players[Object.keys(this.players)[this.tracker]].name //the first player that connected begins...
@@ -34,9 +34,9 @@ class GameState {
         }
     }
 
-    fillDeck() {
+    fillDeck(copies) {
         var deck = []
-        for (var i = 0; i < 3; i++) {
+        for (var i = 0; i < copies; i++) {
             deck.push(new Ambassador())
             deck.push(new Assassin())
             deck.push(new Captain())
@@ -56,7 +56,6 @@ class GameState {
         this.deck = a
     }
 
-    //TODO Move this in a service later
     //Deals 2 cards to every player 
     dealCards() {
         for(var id in this.players) {
