@@ -1,7 +1,7 @@
 const MAX_PLAYERS_PER_ROOM = 4
 
-LobbyManager = {    
-    findEmptyRoom: function(io) {
+class LobbyManager {    
+    static findEmptyRoom(io) {
         var allRooms = io.sockets.adapter.rooms
 
         // Each new connection generates a new room so we have to filter for game rooms 
@@ -15,17 +15,17 @@ LobbyManager = {
         }
 
         return this.createNewRoom()
-    },
+    }
     
-    createNewRoom: function() {
+    static createNewRoom() {
         //TODO generate real uid\
         var roomId = Math.floor(Math.random()*100000)
         var newRoom = `room${roomId}`
 
         return newRoom
-    },
+    }
 
-    leaveCurrentRooms: function(socket) {
+    static leaveCurrentRooms(socket) {
         Object.keys(socket.rooms)
             .filter(roomId => roomId !== socket.id)
             .forEach(id => socket.leave(id));
