@@ -36,40 +36,7 @@ const SOCKET_LIST = {}
 // Create new game (only 1 lobby)
 var allGames = {}
 
-io.on('connection', (socket) => {
-    
-    socket.on('action', (p) => {
-        handleActionRequest(p, socket)
-    })
-
-    socket.on('currentActionResponse', (playerId, response, blockRole) => {
-        handleActionResponse(playerId, response, blockRole, socket)
-    })
-
-    socket.on('blockResponse', (playerId, response) => {
-        handleBlockResponse(playerId, response, socket)
-    })
-
-    socket.on('challengeVerification', (challengedId, challengerId, cardIndex, expectedCardType) => {
-        handleChallengeRequests(challengedId, challengerId, cardIndex, expectedCardType, socket)
-    })
-
-    socket.on('disconnect', () => {
-        delete SOCKET_LIST[socket.id]
-        console.log(socket.currentRoomId)
-        allGames[socket.currentRoomId].onDisconnect(socket.id)
-
-        //notify other players of disconnection
-        io.to(socket.currentRoomId).emit('state change', new GameStatePayload(allGames[socket.currentRoomId]))
-    })
-
-    //temporary
-    socket.on('start game', () => {
-        console.log('start game!')
-        allGames[socket.currentRoomId].onBegin()
-        io.to(socket.currentRoomId).emit('state change', new GameStatePayload(allGames[socket.currentRoomId]))
-    })
-
+io.on('connection', (socket) => {    
     socket.on('find lobby', (playerName) => {
         leaveCurrentRooms(socket);
         var roomId = findEmptyRoom()
@@ -88,6 +55,31 @@ io.on('connection', (socket) => {
         io.to(roomId).emit('state change', new GameStatePayload(allGames[socket.currentRoomId]))
     })
 
+    socket.on('disconnect', () => {
+        delete SOCKET_LIST[socket.id]
+        console.log(socket.currentRoomId)
+        allGames[socket.currentRoomId].onDisconnect(socket.id)
+
+        //notify other players of disconnection
+        io.to(socket.currentRoomId).emit('state change', new GameStatePayload(allGames[socket.currentRoomId]))
+    })
+
+    socket.on('action', (p) => {
+        handleActionRequest(p, socket)
+    })
+
+    socket.on('currentActionResponse', (playerId, response, blockRole) => {
+        handleActionResponse(playerId, response, blockRole, socket)
+    })
+
+    socket.on('blockResponse', (playerId, response) => {
+        handleBlockResponse(playerId, response, socket)
+    })
+
+    socket.on('challengeVerification', (challengedId, challengerId, cardIndex, expectedCardType) => {
+        handleChallengeRequests(challengedId, challengerId, cardIndex, expectedCardType, socket)
+    })
+
     socket.on('cardLost', (victimId, cardLost) => {
         handleCardLoss(victimId, cardLost, socket)
     })
@@ -95,6 +87,14 @@ io.on('connection', (socket) => {
     socket.on('execute exchange', (selected, unselected) => {
         exchangeCards(socket.id, selected, unselected, socket)
     })
+
+    //temporary
+    socket.on('start game', () => {
+        console.log('start game!')
+        allGames[socket.currentRoomId].onBegin()
+        io.to(socket.currentRoomId).emit('state change', new GameStatePayload(allGames[socket.currentRoomId]))
+    })
+
 });
 
 function handleActionRequest(actionPayload, socket) {
