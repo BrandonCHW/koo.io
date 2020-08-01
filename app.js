@@ -54,20 +54,20 @@ io.on('connection', (socket) => {
 
         SOCKET_LIST[socket.id] = socket
         allGames[socket.currentRoomId].players[socket.id] = new Player(playerName)
-
+0
         //send player identity
         var initialState = allGames[socket.currentRoomId].players[socket.id]
         io.to(socket.id).emit('self connection', initialState)
 
-        // notify other players of new connection
+        // notify other players about new connection
         io.to(roomId).emit('state change', new GameStatePayload(allGames[socket.currentRoomId]))
     })
 
     socket.on('disconnect', () => {
         delete SOCKET_LIST[socket.id]
-        allGames[socket.currentRoomId].onDisconnect(socket.id)
+        // allGames[socket.currentRoomId].onDisconnect(socket.id) // TODO uncomment
 
-        //notify other players of disconnection
+        //notify other players about disconnection
         io.to(socket.currentRoomId).emit('state change', new GameStatePayload(allGames[socket.currentRoomId]))
     })
     
@@ -78,8 +78,16 @@ io.on('connection', (socket) => {
         io.to(socket.currentRoomId).emit('state change', new GameStatePayload(allGames[socket.currentRoomId]))
     })
 
-    socket.on('action', (p) => {
-        handleActionRequest(p, socket)
+    socket.on('action', (action) => {
+        // handleActionRequest(action, socket)
+
+        /* Brandon */
+        // 1. Save action being played in gamestate
+        if (action.canBeDenied) {
+            // 2. announce the intent to all player
+        } else {
+            action.execute() //income and coup will go here
+        }
     })
 
     socket.on('currentActionResponse', (playerId, response, blockRole) => {
@@ -107,6 +115,7 @@ function handleActionRequest(actionPayload, socket) {
     var actor = allGames[socket.currentRoomId].players[actionPayload.id]
     var displayText
     var actionRequest
+
     if(actionPayload.to == "") {
         displayText = actor.name + " is performing " + actionPayload.intent
     } else {
@@ -114,6 +123,7 @@ function handleActionRequest(actionPayload, socket) {
     }
     actionRequest = new ActionPayload(actionPayload.id, actionPayload.intent, displayText, allGames[socket.currentRoomId].findPlayerIdByName(actionPayload.to))
     allGames[socket.currentRoomId].actionHistory.push(new ActionLog(actionRequest, "action"))
+    
     io.to(socket.currentRoomId).emit('action broadcast', actionRequest)
 
     if(actionPayload.intent == "income") {
@@ -132,30 +142,34 @@ function processLastAction(socket) {
     var actor = allGames[socket.currentRoomId].players[currentAction.actorId]
     switch(action) {
         //No switch case for income/coup actions because no one can block/challenge it. It just executes automatically on receiving the request from client
-        case "foreign":
-            handleCoinChange(actor, 2)
-            allGames[socket.currentRoomId].nextTurn()
-            io.to(socket.currentRoomId).emit('state change', new GameStatePayload(allGames[socket.currentRoomId]))
-            break
-        case "tax":
-            handleCoinChange(actor, 3)
-            allGames[socket.currentRoomId].nextTurn()
-            io.to(socket.currentRoomId).emit('state change', new GameStatePayload(allGames[socket.currentRoomId]))
-            break
-        case "steal":
-            handleSteal(actor, currentAction.victimId, socket)
-            allGames[socket.currentRoomId].nextTurn()
-            io.to(socket.currentRoomId).emit('state change', new GameStatePayload(allGames[socket.currentRoomId]))
-            break
-        case "assassinate":
-            handleCoinChange(actor, -3)
-            handleAssassinate(actor.name, currentAction.victimId, socket)
-            break
-        case "exchange":
-            handleExchangeRequest(currentAction.actorId, socket)
-            break
-        default:
-            break
+        // case "foreign":
+        //     handleCoinChange(actor, 2)
+        //     allGames[socket.currentRoomId].nextTurn()
+        //     io.to(socket.currentRoomId).emit('state change', new GameStatePayload(allGames[socket.currentRoomId]))
+        //     break
+        // case "tax":
+        //     handleCoinChange(actor, 3)
+        //     allGames[socket.currentRoomId].nextTurn()
+        //     io.to(socket.currentRoomId).emit('state change', new GameStatePayload(allGames[socket.currentRoomId]))
+        //     break
+        // case "steal":
+        //     handleSteal(actor, currentAction.victimId, socket)
+        //     allGames[socket.currentRoomId].nextTurn()
+        //     io.to(socket.currentRoomId).emit('state change', new GameStatePayload(allGames[socket.currentRoomId]))
+        //     break
+        // case "assassinate":
+        //     handleCoinChange(actor, -3)
+        //     handleAssassinate(actor.name, currentAction.victimId, socket)
+        //     break
+        // case "exchange":
+        //     handleExchangeRequest(currentAction.actorId, socket)
+        //     break
+        // default:
+        //     break
+
+        /**Brandon */
+        // 3. Get the action being played (from GameState) 
+        // 4. action.execute()
     }
 }
 
@@ -211,70 +225,67 @@ function handleBlockResponse(playerId, response, socket) {
 }
 
 function handleChallengeRequests(challengedId, challengerId, cardIndex, expectedCardType, socket) {
-    challenged = allGames[socket.currentRoomId].players[challengedId]
-    if(cardIndex == 0) {
-        //The challenged didn't lie
-        if(challenged.firstCard == expectedCardType) {
-            getReplacementCard(challenged, cardIndex, socket)
-            //If the last move logged was an action, execute it (ie: the player who performs the action actually had the corresponding role)
-            if(allGames[socket.currentRoomId].actionHistory[allGames[socket.currentRoomId].actionHistory.length - 2].type == "action") {
-                allGames[socket.currentRoomId].currentActionToExecute = getLastAction(socket)
-                io.to(challengerId).emit('loseCard', "Player " +  challenged.name + " was really a " + expectedCardType + "! You have lost the challenge, choose a card to lose.")
-            }
-            //Else if the last move logged as a block, end the turn (ie: the player who blocked actually had the required role to block)
-            else if(allGames[socket.currentRoomId].actionHistory[allGames[socket.currentRoomId].actionHistory.length - 2].type == "block") {
-                io.to(challengerId).emit('loseCard', "Player " +  challenged.name + " was really a " + expectedCardType + "! You have lost the challenge, choose a card to lose.")
-            }
-        //The challenged lied
-        } else {
-            challenged.firstCardAlive = false
-            //If the last move logged before the challenge was an action, execute it (ie: the player who performs the action DID NOT actually have (or choose to reveal) the required role card)
-            if(allGames[socket.currentRoomId].actionHistory[allGames[socket.currentRoomId].actionHistory.length - 2].type == "action") {
-                allGames[socket.currentRoomId].nextTurn()
-                io.to(socket.currentRoomId).emit('state change', new GameStatePayload(allGames[socket.currentRoomId]))
-            }
-            //Else if the last move logged before the challenge was a block, end the turn (ie: the player who blocked DID NOT actually have the required card to block)
-            else if(allGames[socket.currentRoomId].actionHistory[allGames[socket.currentRoomId].actionHistory.length - 2].type == "block") {
-                processLastAction(socket)
-            }
-        }
-    } else if (cardIndex == 1) {
-        //The challenged didn't lie
-        if(challenged.secondCard == expectedCardType) {
-            getReplacementCard(challenged, cardIndex, socket)
-            //If the last move logged before the challenge was an action, execute it (ie: the player who performs the action actually had the corresponding role)
-            if(allGames[socket.currentRoomId].actionHistory[allGames[socket.currentRoomId].actionHistory.length - 2].type == "action") {
-                allGames[socket.currentRoomId].currentActionToExecute = getLastAction(socket)
-                io.to(challengerId).emit('loseCard', "Player " +  challenged.name + " was really a " + expectedCardType + "! You have lost the challenge, choose a card to lose.")
-            }
-            //Else if the last move before the challenge logged was a block, end the turn (ie: the player who blocked actually had the required role to block)
-            else if(allGames[socket.currentRoomId].actionHistory[allGames[socket.currentRoomId].actionHistory.length - 2].type == "block") {
-                io.to(challengerId).emit('loseCard', "Player " +  challenged.name + " was really a " + expectedCardType + "! You have lost the challenge, choose a card to lose.")
-            }
-        //The challenged lied
-        } else {
-            challenged.secondCardAlive = false
-            //If the last move logged before the challenge was an action, execute it (ie: the player who performs the action DID NOT actually have (or choose to reveal) the required role card)
-            if(allGames[socket.currentRoomId].actionHistory[allGames[socket.currentRoomId].actionHistory.length - 2].type == "action") {
-                allGames[socket.currentRoomId].nextTurn()
-                io.to(socket.currentRoomId).emit('state change', new GameStatePayload(allGames[socket.currentRoomId]))
-            }
-            //Else if the last move logged before the challenge was a block, end the turn (ie: the player who blocked DID NOT actually have the required card to block)
-            else if(allGames[socket.currentRoomId].actionHistory[allGames[socket.currentRoomId].actionHistory.length - 2].type == "block") {
-                processLastAction(socket)
-            }
-        }
-    }
+    /* Brandon */
+    // Au lieu, prendre la Card que le challenged a choisi et call card.canExecute(action) et 
+    // dependamment du resultat tu peux faire emit('loseCard',)
+
+
+    // challenged = allGames[socket.currentRoomId].players[challengedId]
+    // if(cardIndex == 0) {
+    //     //The challenged didn't lie
+    //     if(challenged.firstCard == expectedCardType) {
+    //         getReplacementCard(challenged, cardIndex, socket)
+    //         //If the last move logged was an action, execute it (ie: the player who performs the action actually had the corresponding role)
+    //         if(allGames[socket.currentRoomId].actionHistory[allGames[socket.currentRoomId].actionHistory.length - 2].type == "action") {
+    //             allGames[socket.currentRoomId].currentActionToExecute = getLastAction(socket)
+                // io.to(challengerId).emit('loseCard', "Player " +  challenged.name + " was really a " + expectedCardType + "! You have lost the challenge, choose a card to lose.")
+    //         }
+    //         //Else if the last move logged as a block, end the turn (ie: the player who blocked actually had the required role to block)
+    //         else if(allGames[socket.currentRoomId].actionHistory[allGames[socket.currentRoomId].actionHistory.length - 2].type == "block") {
+    //             io.to(challengerId).emit('loseCard', "Player " +  challenged.name + " was really a " + expectedCardType + "! You have lost the challenge, choose a card to lose.")
+    //         }
+    //     //The challenged lied
+    //     } else {
+    //         challenged.firstCardAlive = false
+    //         //If the last move logged before the challenge was an action, execute it (ie: the player who performs the action DID NOT actually have (or choose to reveal) the required role card)
+    //         if(allGames[socket.currentRoomId].actionHistory[allGames[socket.currentRoomId].actionHistory.length - 2].type == "action") {
+    //             allGames[socket.currentRoomId].nextTurn()
+    //             io.to(socket.currentRoomId).emit('state change', new GameStatePayload(allGames[socket.currentRoomId]))
+    //         }
+    //         //Else if the last move logged before the challenge was a block, end the turn (ie: the player who blocked DID NOT actually have the required card to block)
+    //         else if(allGames[socket.currentRoomId].actionHistory[allGames[socket.currentRoomId].actionHistory.length - 2].type == "block") {
+    //             processLastAction(socket)
+    //         }
+    //     }
+    // } else if (cardIndex == 1) {
+    //     //The challenged didn't lie
+    //     if(challenged.secondCard == expectedCardType) {
+    //         getReplacementCard(challenged, cardIndex, socket)
+    //         //If the last move logged before the challenge was an action, execute it (ie: the player who performs the action actually had the corresponding role)
+    //         if(allGames[socket.currentRoomId].actionHistory[allGames[socket.currentRoomId].actionHistory.length - 2].type == "action") {
+    //             allGames[socket.currentRoomId].currentActionToExecute = getLastAction(socket)
+    //             io.to(challengerId).emit('loseCard', "Player " +  challenged.name + " was really a " + expectedCardType + "! You have lost the challenge, choose a card to lose.")
+    //         }
+    //         //Else if the last move before the challenge logged was a block, end the turn (ie: the player who blocked actually had the required role to block)
+    //         else if(allGames[socket.currentRoomId].actionHistory[allGames[socket.currentRoomId].actionHistory.length - 2].type == "block") {
+    //             io.to(challengerId).emit('loseCard', "Player " +  challenged.name + " was really a " + expectedCardType + "! You have lost the challenge, choose a card to lose.")
+    //         }
+    //     //The challenged lied
+    //     } else {
+    //         challenged.secondCardAlive = false
+    //         //If the last move logged before the challenge was an action, execute it (ie: the player who performs the action DID NOT actually have (or choose to reveal) the required role card)
+    //         if(allGames[socket.currentRoomId].actionHistory[allGames[socket.currentRoomId].actionHistory.length - 2].type == "action") {
+    //             allGames[socket.currentRoomId].nextTurn()
+    //             io.to(socket.currentRoomId).emit('state change', new GameStatePayload(allGames[socket.currentRoomId]))
+    //         }
+    //         //Else if the last move logged before the challenge was a block, end the turn (ie: the player who blocked DID NOT actually have the required card to block)
+    //         else if(allGames[socket.currentRoomId].actionHistory[allGames[socket.currentRoomId].actionHistory.length - 2].type == "block") {
+    //             processLastAction(socket)
+    //         }
+    //     }
+    // }
 }
 
-//add or remove coins by a certain amount (amount can be negative)
-function handleCoinChange(player, amount) {
-    if (player) {
-        player.coins += amount
-    } else {
-        console.log("error couldn't find player")
-    }
-}
 
 function handleSteal(actor, victimId, socket) {
     var victim = allGames[socket.currentRoomId].players[victimId]

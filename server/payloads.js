@@ -7,9 +7,10 @@ class GameStatePayload {
 
 class ActionPayload {
     //Action payload destined to be sent to the client
-    constructor(actorId, intent, displayText="", victimId="") {
+    constructor(actorId, action, displayText="", victimId="") {
         this.actorId = actorId
-        this.intent = intent
+        // this.intent = intent
+        this.action = action // An Action (Income, ForeignAid, ...)
         this.victimId = victimId
         this.displayText = displayText
     }

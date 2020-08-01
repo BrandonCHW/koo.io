@@ -43,37 +43,41 @@ window.onload = () => {
     socket.on('action broadcast', (actionPayload) => {
         updateCurrentMove(actionPayload.displayText)
         //The player who initiated the action can't challenge or block himself/herself
-        if(playerId != actionPayload.actorId) {
-            clearReactionTab()
-            $('#reaction').css("display", "block")
-            $('#reaction').append(`<button class="reactionSel" value="confirm">Confirm</button>`)
+        // if(playerId != actionPayload.actorId) {
+        //     clearReactionTab()
+        //     $('#reaction').css("display", "block")
+        //     $('#reaction').append(`<button class="reactionSel" value="confirm">Confirm</button>`)
 
-            //If the action is take foreign aid, can be blocked by claiming duke
-            if (actionPayload.intent == "foreign") {
-                $('#reaction').append(`<button class="reactionSel" value="block-duke">Claim to be Duke</button>`)
-            }
-            //If the action is other than income, coup or foreign, can challenge
-            else if (actionPayload.intent != "income" && actionPayload.intent != "coup") {
-                $('#reaction').append(`<button class="reactionSel" id="challenge-reaction" value="challenge">Challenge</button>`)
-            }
+        //     //If the action is take foreign aid, can be blocked by claiming duke
+        //     if (actionPayload.intent == "foreign") {
+        //         $('#reaction').append(`<button class="reactionSel" value="block-duke">Claim to be Duke</button>`)
+        //     }
+        //     //If the action is other than income, coup or foreign, can challenge
+        //     else if (actionPayload.intent != "income" && actionPayload.intent != "coup") {
+        //         $('#reaction').append(`<button class="reactionSel" id="challenge-reaction" value="challenge">Challenge</button>`)
+        //     }
 
-            //If the action is assassinate and the player is the target, can claim contessa
-            if (actionPayload.intent == "assassinate" && playerId === actionPayload.victimId) {
-                $('#reaction').append(`<button class="reactionSel" value="block-contessa">Claim to be Contessa</button>`)
-            }
-            //If the action is steal and the player is the target, can claim captain or ambassador
-            else if (actionPayload.intent == "steal" && playerId === actionPayload.victimId) {
-                $('#reaction').append(`<button class="reactionSel" value="block-captain">Claim to be Captain</button>`)
-                $('#reaction').append(`<button class="reactionSel" value="block-ambassador">Claim to be Ambassador</button>`)
-            }
-            $(".reactionSel").on("click", (event) => handleActionChallengeResponse('currentActionResponse', event.target))
-        }
+        //     //If the action is assassinate and the player is the target, can claim contessa
+        //     if (actionPayload.intent == "assassinate" && playerId === actionPayload.victimId) {
+        //         $('#reaction').append(`<button class="reactionSel" value="block-contessa">Claim to be Contessa</button>`)
+        //     }
+        //     //If the action is steal and the player is the target, can claim captain or ambassador
+        //     else if (actionPayload.intent == "steal" && playerId === actionPayload.victimId) {
+        //         $('#reaction').append(`<button class="reactionSel" value="block-captain">Claim to be Captain</button>`)
+        //         $('#reaction').append(`<button class="reactionSel" value="block-ambassador">Claim to be Ambassador</button>`)
+        //     }
+        //     $(".reactionSel").on("click", (event) => handleActionChallengeResponse('currentActionResponse', event.target))
+        // }
+
+        /* Brandon */
+        actionPayload.action.announce()
+        $(".reactionSel").on("click", (event) => handleActionChallengeResponse('currentActionResponse', event.target))
     })
 
     socket.on('block broadcast', (actionPayload) => {
         updateCurrentMove(actionPayload.displayText)
         clearReactionTab()
-        //The player who claimed a role to block an action can't challenge himself/herself
+        //The player who claimed a role to block an action can't challenge himself/herself/zheshelf/helicopterself/bookshelf
         if(playerId != actionPayload.actorId) {
             $('#reaction').css("display", "block")
             $('#reaction').append(`<button class="reactionSel" value="confirm">Confirm</button>`)
@@ -90,28 +94,33 @@ window.onload = () => {
         //If you are the person who was challenged, choose a card to reveal
         if (actionPayload.victimId == playerId) {
             var challengedIntent = actionPayload.intent.split("-")[1]
-            switch(challengedIntent) {
-                case "duke":
-                case "tax":
-                    expectedCardType = "Duke"
-                    break
-                case "captain":
-                case "steal":
-                    expectedCardType = "Captain"
-                    break
-                case "assassinate":
-                    expectedCardType = "Assassin"
-                    break
-                case "ambassador":
-                case "exchange":
-                    expectedCardType = "Ambassador"
-                    break
-                case "contessa":
-                    expectedCardType = "Contessa"
-                    break 
-                default:
-                    break
-            }
+            // switch(challengedIntent) {
+            //     case "duke":
+            //     case "tax":
+            //         expectedCardType = "Duke"
+            //         break
+            //     case "captain":
+            //     case "steal":
+            //         expectedCardType = "Captain"
+            //         break
+            //     case "assassinate":
+            //         expectedCardType = "Assassin"
+            //         break
+            //     case "ambassador":
+            //     case "exchange":
+            //         expectedCardType = "Ambassador"
+            //         break
+            //     case "contessa":
+            //         expectedCardType = "Contessa"
+            //         break 
+            //     default:
+            //         break
+            // }
+            
+            /* Brandon */
+            // Au lieu, juste send la carte au backend. voir handleChallengeRequest() dans app.js
+
+
             updateCardSelectMessage("Choose a card to prove your claim or to lose if you've been caught lying!")
             $(".cardSelectBtn").on("click", (event) => {
                 $('#cardSelect').css("display", "none")
