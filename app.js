@@ -81,7 +81,9 @@ io.on('connection', (socket) => {
 
     socket.on('disconnect', () => {
         delete SOCKET_LIST[socket.id]
-        allGames[socket.currentRoomId].onDisconnect(socket.id)
+
+        LobbyManager.leaveCurrentRooms(socket);
+        if(socket.currentRoomId) allGames[socket.currentRoomId].onDisconnect(socket.id)
 
         //notify other players of disconnection
         io.to(socket.currentRoomId).emit('state change', new GameStatePayload(allGames[socket.currentRoomId]))
