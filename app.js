@@ -38,9 +38,10 @@ http.listen(PORT, () => {
 const SOCKET_LIST = {}
 // Create new game (only 1 lobby)
 var allGames = {}
+var inviteCodeToRoom = {}
 
 io.on('connection', (socket) => {    
-    socket.on('find lobby', (playerName) => {
+    socket.on('find lobby', (lobbyPayload) => {
         LobbyManager.leaveCurrentRooms(socket);
         var roomId = LobbyManager.findEmptyRoom(io)
         
@@ -50,17 +51,32 @@ io.on('connection', (socket) => {
         }
 
         socket.currentRoomId = roomId
-        socket.join(roomId)
+        handleRoomJoin(socket, lobbyPayload.playerName)
+    })
 
-        SOCKET_LIST[socket.id] = socket
-        allGames[socket.currentRoomId].players[socket.id] = new Player(socket.id, playerName)
+    // TODO error handling for joining lobbies
 
-        //send player identity
-        var initialState = allGames[socket.currentRoomId].players[socket.id]
-        io.to(socket.id).emit('self connection', initialState)
+    socket.on('invite friends', (lobbyPayload) => {
+        LobbyManager.leaveCurrentRooms(socket);
+        var roomId = LobbyManager.createNewRoom()
+        allGames[roomId] = new GameState()
 
-        // notify other players of new connection
-        io.to(roomId).emit('state change', new GameStatePayload(allGames[socket.currentRoomId]))
+        var inviteCode = LobbyManager.createInviteCode(5)
+        inviteCodeToRoom[inviteCode] = roomId
+
+        socket.emit('invite code', inviteCode)
+
+        socket.currentRoomId = roomId
+        handleRoomJoin(socket, lobbyPayload.playerName)
+    })
+
+    socket.on('join lobby', (lobbyPayload) => {
+        LobbyManager.leaveCurrentRooms(socket);
+
+        var roomId = inviteCodeToRoom[lobbyPayload.inviteCode]
+
+        socket.currentRoomId = roomId
+        handleRoomJoin(socket, lobbyPayload.playerName)
     })
 
     socket.on('disconnect', () => {
@@ -102,6 +118,22 @@ io.on('connection', (socket) => {
         exchangeCards(socket.id, selected, unselected, socket)
     })
 });
+
+function handleRoomJoin(socket, playerName) {
+    const {currentRoomId, id} = socket
+
+    socket.join(currentRoomId)
+
+    SOCKET_LIST[id] = socket
+    allGames[currentRoomId].players[id] = new Player(socket.id, playerName)
+
+    //send player identity
+    var initialState = allGames[currentRoomId].players[id]
+    io.to(id).emit('self connection', initialState)
+
+    // notify other players of new connection
+    io.to(currentRoomId).emit('state change', new GameStatePayload(allGames[currentRoomId]))
+}
 
 function handleActionRequest(actionPayload, socket) {
     var actor = allGames[socket.currentRoomId].players[actionPayload.id]

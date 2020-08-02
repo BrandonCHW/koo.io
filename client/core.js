@@ -7,6 +7,13 @@ window.onload = () => {
             this.to = to
         }
     }
+
+    class LobbyPayload {
+        constructor(playerName, inviteCode="") {
+            this.playerName = playerName
+            this.inviteCode = inviteCode
+        }
+    }
     
     var socket = io()
     
@@ -34,6 +41,10 @@ window.onload = () => {
     // called when the player bitconnects to the game
     socket.on('self connection', (p) => {
         updatePlayerStatus(p)
+    })
+
+    socket.on('invite code', (inviteCode) => {
+        $("#inviteCodeDisplay").text(inviteCode)
     })
 
     // Receive timer update (periodically updated)
@@ -182,7 +193,19 @@ window.onload = () => {
 
     $("#findLobby").on("click", function() {
         var playerName = document.getElementById('playerNameInput').value
-        socket.emit('find lobby', playerName)
+        socket.emit('find lobby', new LobbyPayload(playerName))
+    })
+
+    $("#joinLobby").on("click", function() {
+        var playerName = document.getElementById('playerNameInput').value
+        var inviteCode = document.getElementById('inviteCodeInput').value
+
+        socket.emit('join lobby', new LobbyPayload(playerName, inviteCode))
+    })
+
+    $("#inviteFriends").on("click", function() {
+        var playerName = document.getElementById('playerNameInput').value
+        socket.emit('invite friends', new LobbyPayload(playerName))
     })
 
     // PASS THE TURN TO THE NEXT PLAYER
