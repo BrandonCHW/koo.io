@@ -1,0 +1,93 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script type="text/javascript" src="/socket.io/socket.io.js"></script>
+    <script src="/jquery/jquery.slim.min.js"></script>
+    <script src="/states/actions.js"></script>
+    <script src="./bundle.js"></script>
+    <title>TEST TEST TEST</title>
+</head>
+<body>
+    <p>Test koo.io</p>
+
+    <h1 id="currentState">*currentstate*</h1>
+
+    <h2 id="actionMessage">*action message*</h2>
+    <h2 id="stateMessage">*state message*</h2>
+    <h2 id="counterMessage">*counter message*</h2>
+
+    <div id="actions">
+        <p>Actions</p>
+        <div style="border: 2px solid red">
+            <label for="income">Income</label>
+            <input type="radio" id="income" name="action" checked></button>
+            <label for="foreign">Foreign</label>
+            <input type="radio" id="foreign" name="action"></button>
+            <label for="coup">Coup</label>
+            <input type="radio" id="coup" name="action"></button>
+            <label for="tax">Tax</label>
+            <input type="radio" id="tax" name="action"></button>
+            <label for="steal">Steal</label>
+            <input type="radio" id="steal" name="action"></button>
+            <label for="assassinate">Assassinate</label>
+            <input type="radio" id="assassinate" name="action"></button>
+            <label for="exchange">Exchange</label>
+            <input type="radio" id="exchange" name="action"></button>
+            <label for="confirm">Confirm</label>
+            <input type="radio" id="confirm" name="action"></button>
+        </div>
+
+        <p>CARD SELECTION</p>
+        <div style="border: 2px solid green">
+            <label for="firstCard">FirstCard</label>
+            <input type="radio" id="firstCard" name="cardSelector" checked></button>
+            <label for="secondCard">SecondCard</label>
+            <input type="radio" id="secondCard" name="cardSelector"></button>
+            
+            <label for="chooseCard">ChooseCard</label>
+            <input type="radio" id="chooseCard" name="action"></button>
+        </div>
+
+        <!-- Card Selector (Assassinate, Coup, Challenges) -->
+        <div id="cardSelect" style="display: none;">
+            <!-- <h4><span id="attackerName">Player</span> is <span id="attackType">lemheurdheuring</span> you!</h4>
+            <h4>Choose a card to <span>sacrifice</span></h4> -->
+            <h4><span id="cardSelectMessage">Player is lemheurdheuring</span></h4>
+            <button class="cardSelectBtn" type="submit" value="0">Card 1</button>
+            <button class="cardSelectBtn" type="submit" value="1">Card 2</button>
+        </div>    
+
+        <!-- Select cards to keep (exchange) -->
+        <div id="cardExchange" style="display: none">
+            <h4>Choose cards to keep</h4>
+            <div id="exchangeCardSelect"></div>
+        </div>
+
+        <p>OWNER</p>
+        <div style="border: 2px solid black">
+            <label for="p1">p1</label>
+            <input type="radio" id="p1" name="owner" data-name="p1" checked></button>
+            <label for="confirm">p2</label>
+            <input type="radio" id="p2" name="owner" data-name="p2"></button>
+        </div>
+        <p>TARGET</p>
+        <div style="border: 2px solid black">
+            <label for="p1">p1</label>
+            <input type="radio" id="p1" name="target" data-name="p1"></button>
+            <label for="confirm">p2</label>
+            <input type="radio" id="p2" name="target" data-name="p2" checked></button>
+        </div>
+        
+        <p>COUNTER ACTION</p>
+        <div style="border: 2px solid blue">
+            <label for="block">Block/Call Bluff</label>
+            <input type="radio" id="block" name="action"></button>
+            <label for="Challenge">Challenge</label>
+            <input type="radio" id="challengePlayer" name="action"></button>
+        </div>
+        
+        <button id="next" style="background: rgb(245, 0, 0)" >NEXT</button>
+    </div>
+</body>
+</html>     

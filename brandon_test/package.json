@@ -1,0 +1,21 @@
+{
+  "name": "state_test",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "watch": "watchify core.js -o bundle.js -v",
+    "build": "browserify core.js -o bundle.js",
+    "start": "npm run watch"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.17.1",
+    "jquery": "^3.5.1",
+    "socket.io": "^2.3.0"
+  },
+  "devDependencies": {
+    "watchify": "^3.11.1"
+  }
+}
