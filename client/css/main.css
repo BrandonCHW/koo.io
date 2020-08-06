@@ -1,11 +1,104 @@
-#main-container {
-    height: 100vh;
+@keyframes rotation {
+    from {
+        transform: rotate(0deg); 
+        /* All browsers support */
+        -moz-transform: rotate(0deg); 
+        -webkit-transform: rotate(0deg); 
+        -o-transform: rotate(0deg); 
+        -ms-transform: rotate(0deg); 
+    }
+    to {
+        transform: rotate(359deg); 
+        /* All browsers support */
+        -moz-transform: rotate(359deg); 
+        -webkit-transform: rotate(359deg); 
+        -o-transform: rotate(359deg); 
+        -ms-transform: rotate(359deg); 
+    }
 }
 
-canvas {    
-    width: 100%;
-    height: 100%;
-    border: 1px solid black;
-    background: white;
-    /* display: none; */
+#background {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    width: 400px;
+    height: 400px;
+    margin: -200px 0 0 -200px;
+    z-index: -1;
+    opacity: 0.15;
+    animation: rotation 180s infinite linear;
+    /* All browsers support */
+    -moz-animation: rotation 180s infinite linear; 
+    -webkit-animation: rotation 180s infinite linear; 
+    -o-animation: rotation 180s infinite linear; 
+    -ms-animation: rotation 180s infinite linear; 
+}
+
+.cardSelect{
+    display: none;
+}
+
+.transparent_square{
+	width: 100%;
+    height: auto;
+}
+
+.central_text{
+	left: 50%;
+	top: 50%;
+	transform: translate(-50%, -50%);
+	position: absolute;
+}
+
+.player_container{
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	width: 20%;
+	transform: translate(-50%, -50%);
+}
+
+.moon{
+	width: 100%;
+	height: auto;
+	position: relative;
+	left: 175%;
+}
+
+.player_container.player1{
+	transform: translate(-50%, -50%) rotate(0deg);
+}
+.player_container.player2{
+	transform: translate(-50%, -50%) rotate(60deg);
+}
+.player_container.player3{
+	transform: translate(-50%, -50%) rotate(120deg);
+}
+.player_container.player4{
+	transform: translate(-50%, -50%) rotate(180deg);
+}
+.player_container.player5{
+	transform: translate(-50%, -50%) rotate(240deg);
+}
+.player_container.player6{
+	transform: translate(-50%, -50%) rotate(300deg);
+}
+
+.moon.player1{
+	transform: rotate(-0deg);
+}
+.moon.player2{
+	transform: rotate(-60deg);
+}
+.moon.player3{
+	transform: rotate(-120deg);
+}
+.moon.player4{
+	transform: rotate(-180deg);
+}
+.moon.player5{
+	transform: rotate(-240deg);
+}
+.moon.player6{
+	transform: rotate(-300deg);
 }

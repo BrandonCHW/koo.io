@@ -27,7 +27,7 @@ window.onload = () => {
             $('#nextTurn').prop('disabled', false)
         }
         clearReactionTab()
-        updateOtherPlayersView(payload)
+        updateAllPlayersDisplay(payload)
         updatePlayerStatus(payload.gameState.players[playerId])
     })
     
@@ -115,7 +115,7 @@ window.onload = () => {
             }
             updateCardSelectMessage("Choose a card to prove your claim or to lose if you've been caught lying!")
             $(".cardSelectBtn").on("click", (event) => {
-                $('#cardSelect').css("display", "none")
+                $('.cardSelect').css("display", "none")
                 $(".cardSelectBtn").off("click")
                 socket.emit('challengeVerification', playerId, actionPayload.actorId, event.target.value, expectedCardType)
             })
@@ -126,7 +126,7 @@ window.onload = () => {
         updateCardSelectMessage(message)
         // TODO: Change target.textContent for a more secure id
         $(".cardSelectBtn").on("click", (event) => {
-            $('#cardSelect').css("display", "none")
+            $('.cardSelect').css("display", "none")
             $(".cardSelectBtn").off("click")
             socket.emit('cardLost', playerId, event.target.value)
         })
@@ -177,11 +177,14 @@ window.onload = () => {
 
     //TODO remove this later
     $("#startGame").on("click", function() {
+        $("#startGame").remove()
         socket.emit('start game')
     })
 
     $("#findLobby").on("click", function() {
         var playerName = document.getElementById('playerNameInput').value
+        $("#login_view").css("display", "none")
+        $("#game_view").css("display", "block")
         socket.emit('find lobby', playerName)
     })
 
@@ -230,28 +233,31 @@ window.onload = () => {
     }
     
     //Updates the 'other players'
-    function updateOtherPlayersView(payload) {
-        var otherPlayers = Object.keys(payload.gameState.players)
-            .filter(key => key != playerId)
-            .reduce((obj, key) => {
-                obj[key] = payload.gameState.players[key]
-                return obj
-            }, {})
-        var otherSection = $("#otherPlayers > div")
+    function updateAllPlayersDisplay(payload) {
+        var playersInfo = payload.gameState.players
+        var playersDisplay = $("#otherPlayers")
         var playerSelector = $("#playerSelector > div")
-        otherSection.empty()
+        $(".player_container").remove()
         playerSelector.empty()
-        for(const id in otherPlayers) {
-            const other = otherPlayers[id]
-            otherSection.append(`<p>Name: ${other.name}; 
-                Card1: ${other.firstCard} 
-                (${other.firstCardAlive}); 
-                Card2: ${other.secondCard} 
-                (${other.secondCardAlive}); 
-                Coins: ${other.coins}</p>`)
-    
-            playerSelector.append(`<label for="player-${other.name}">${other.name}</label>
-                                    <input type="radio" id="player-${other.name}" data-name="${other.name}" name="playerSel"></button>`)
+        const rotationAngle = 360 / Object.keys(playersInfo).length
+        var currentAngle = 0
+        for(const id in playersInfo) {
+            const player = playersInfo[id]
+            playersDisplay.append(
+                `<div class="player_container" style="transform: translate(-50%, -50%) rotate(${currentAngle}deg);">
+                    <div class="moon" style="transform: rotate(-${currentAngle}deg);">
+                        <p>Name: ${player.name};
+                        Card1: ${player.firstCard} (${player.firstCardAlive}); 
+                        Card2: ${player.secondCard} (${player.secondCardAlive}); 
+                        Coins: ${player.coins}</p>
+                    </div>
+                </div>`
+            )
+            currentAngle += rotationAngle
+            if(id != playerId) {
+                playerSelector.append(`<label for="player-${player.name}">${player.name}</label>
+                <input type="radio" id="player-${player.name}" data-name="${player.name}" name="playerSel"></button>`)
+            }
         }
     }
     
@@ -267,7 +273,7 @@ window.onload = () => {
 
     function updateCardSelectMessage(message) {
         $("#cardSelectMessage").text(message)
-        $('#cardSelect').css("display", "block")
+        $('.cardSelect').css("display", "block")
     }
 
     function clearReactionTab() {

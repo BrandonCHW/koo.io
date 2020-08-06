@@ -13,7 +13,9 @@
         <!-- Popper JS (required for Bootstrap)-->
         <script src="/popper/popper.min.js"></script>
         <!-- Bootstrap JS -->
-        <script src="/bootstrap/bootstrap.min.js"></script>   
+        <script src="/bootstrap/bootstrap.min.js"></script>
+        <!-- Fontawesome -->
+        <!-- <script src="https://kit.fontawesome.com/2ab9c49d28.js" crossorigin="anonymous"></script> -->
 
         <style>
             label {
@@ -22,8 +24,8 @@
         </style>
     </head>
     <body style="height: 100vh;" class="bg-primary">
-        <!-- Login Page -->
-        <div class="container h-100">
+        <!-- Login View -->
+        <div id="login_view" class="container h-100">
             <div class="row h-25 align-items-end justify-content-center">
                 <h1>Koo.io</h1>
             </div>
@@ -61,91 +63,132 @@
                 </div>
             </div>
         </div>
-        <div>
-            <p>Timer: <span id="roundTimer"></span></p>
-        </div>
-    
-        <div>
-            <button id="startGame">Start Game</button>
-        </div>
-        
-        <!-- Turn indicator -->
-        <h2 style="text-align: center;">Turn: <span class="turn">X</h2>
 
-        <!-- Current move -->
-        <h3 style="text-align: center;">
-            Current Move:
-            <div id="currentMove"></div>
-            <!-- React to Current Move Selector -->
-            <div id="reaction" style="display: none;"></div>    
-        </h3>
+        <!-- Game View -->
+        <div id="game_view" class="container" style="display: block">
+            <!-- Background -->
+            <img id="background" src="img/futuristic_circle_400.png">
 
-        <!-- Other players data -->
-        <div id="otherPlayers">
-            <h1>Other Players</h1>
-            <div>
-                <p>Should not see this</p>
+            <div class="row">
+                <div class="col-6">
+                    <div>
+                        <p>Timer: <span id="roundTimer"></span></p>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div>
+                        <button id="startGame">Start Game</button>
+                    </div>
+                    <div>settings + report(?)</div>
+                </div>
             </div>
-        </div>
 
-        <!-- Current player data -->
-        <div>
-            <h1>Player status</h1>
-            <p>My name: <span id="playerName"></span></p>
-            <p>Player Coins: <span id="pCoins">0</span></p>
-            <p>Card 1: <span id="pCard1Name">card1</span> (<span id="pCard1Alive">status</span>)</p>
-            <p>Card 2: <span id="pCard2Name">card2</span> (<span id="pCard2Alive">status</span>)</p>
-        </div>
+            <!-- All players data -->
+            <div class="row">
+                    <div class="col">
+                            <div id="otherPlayers" class="circle_container">
+                                <img class="transparent_square" src="img/transparent_square.png" width="2" height="2">
             
-        <!-- Player actions -->
-        <div id="actions">
-            <h4>Generic</h4>
-            <div>
-                <div>
-                    <label for="income">Income: +1 Coin</label>
-                    <input type="radio" id="income" name="action"></button>
-                    <label for="foreign">Foreign: +2 Coin</label>
-                    <input type="radio" id="foreign" name="action"></button>
-                    <label for="coup">Coup: -7 Coins</label>
-                    <input type="radio" id="coup" name="action"></button>
-                </div>
+                                <div class="central_text text-center">
+                                    <!-- Turn indicator -->
+                                    <h2 style="text-align: center;">Turn: <span class="turn">X</h2>
+                                    <!-- Current move -->
+                                    <h3 style="text-align: center;">
+                                        Current Move:
+                                        <div id="currentMove"></div>
+                                        <!-- React to Current Move Selector -->
+                                        <div id="reaction" style="display: none;"></div>    
+                                    </h3>
+                                </div>
+                            </div>
+                    </div>
+            </div>
 
-                <div>
-                    <label for="tax">Tax: +3 Coins</label>
-                    <input type="radio" id="tax" name="action"></button>
-                    <label for="steal">Steal: Yoink (+2 coins)</label>
-                    <input type="radio" id="steal" name="action"></button>
-                    <label for="assassinate">Assassinate: Kill (-3 Coins)</label>
-                    <input type="radio" id="assassinate" name="action"></button>
-                    <label for="exchange">Exchange: Take 2 cards, keep 1</label>
-                    <input type="radio" id="exchange" name="action"></button>
+            <!-- Current player data -->
+            <div class="d-flex justify-content-center">
+                <div class="d-flex flex-column">
+                    <div class="d-flex justify-content-center">
+                        <p>Player Coins: <span id="pCoins">0</span></p>
+                        <div class="d-flex flex-column justify-content-center">
+                            <p>Card 1: <span id="pCard1Name">card1</span> (<span id="pCard1Alive">status</span>)</p>
+                            <button class="cardSelectBtn cardSelect" type="submit" value="0">Card 1</button>
+                        </div>
+                        <div class="d-flex flex-column justify-content-center">
+                            <p>Card 2: <span id="pCard2Name">card2</span> (<span id="pCard2Alive">status</span>)</p>
+                            <button class="cardSelectBtn cardSelect" type="submit" value="1">Card 2</button>
+                        </div>
+                    </div>
+                    <div class="cardSelect" style="text-align: center;">
+                        <h4>
+                            <span id="cardSelectMessage">Player is lemheurdheuring</span>
+                        </h4>
+                    </div>
+                    <!-- Select cards to keep (exchange) -->
+                    <div id="cardExchange" style="display: none">
+                        <h4>Choose cards to keep</h4>
+                        <div id="exchangeCardSelect"></div>
+                    </div>
                 </div>
             </div>
 
-            <div id="playerSelector" style="display: none;">
-                <h4>Intention: <span id="intention">INTENTION</span></h4>
-                <div>
-                    <button>you shouldn't be able to see this</button>
+            <!-- Player actions -->
+            <div class="row">
+                <div class="col">
+                    <div class="row">
+                        <div class="col-6 col-sm-4">
+                            <div class="text-center">Non-role specific actions</div>
+                            <div class="row">
+                                <div class="col-xl-4 d-flex justify-content-center">
+                                    <label for="income">Income: +1 Coin</label>
+                                    <input type="radio" id="income" name="action"></button>
+                                </div>
+                                <div class="col-xl-4 d-flex justify-content-center">
+                                    <label for="foreign">Foreign: +2 Coin</label>
+                                    <input type="radio" id="foreign" name="action"></button>
+                                </div>
+                                <div class="col-xl-4 d-flex justify-content-center">
+                                    <label for="coup">Coup: -7 Coins</label>
+                                    <input type="radio" id="coup" name="action"></button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-sm-8">
+                            <div class="text-center">Role specific actions</div>
+                            <div class="row">
+                                <div class="col-sm d-flex justify-content-center">
+                                    <label for="tax">Tax: +3 Coins</label>
+                                    <input type="radio" id="tax" name="action"></button>
+                                </div>
+                                <div class="col-sm d-flex justify-content-center">
+                                    <label for="steal">Steal: Yoink (+2 coins)</label>
+                                    <input type="radio" id="steal" name="action"></button>
+                                </div>
+                                <div class="col-sm d-flex justify-content-center">
+                                    <label for="assassinate">Assassinate: Kill (-3 Coins)</label>
+                                    <input type="radio" id="assassinate" name="action"></button>
+                                </div>
+                                <div class="col-sm d-flex justify-content-center">
+                                    <label for="exchange">Exchange: Take 2 cards, keep 1</label>
+                                    <input type="radio" id="exchange" name="action"></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-6">
+                            <div id="playerSelector" style="display: none;">
+                                <h4>Intention: <span id="intention">INTENTION</span></h4>
+                                <div>
+                                    <button>you shouldn't be able to see this</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <button id="nextTurn" style="background: rgb(192, 192, 192)" >NEXT TURN</button>
+                        </div>
+                    </div>
                 </div>
             </div>
-
         </div>
-
-        <!-- Card Selector (Assassinate, Coup, Challenges) -->
-        <div id="cardSelect" style="display: none;">
-            <!-- <h4><span id="attackerName">Player</span> is <span id="attackType">lemheurdheuring</span> you!</h4>
-            <h4>Choose a card to <span>sacrifice</span></h4> -->
-            <h4><span id="cardSelectMessage">Player is lemheurdheuring</span></h4>
-            <button class="cardSelectBtn" type="submit" value="0">Card 1</button>
-            <button class="cardSelectBtn" type="submit" value="1">Card 2</button>
-        </div>    
-
-        <!-- Select cards to keep (exchange) -->
-        <div id="cardExchange" style="display: none">
-            <h4>Choose cards to keep</h4>
-            <div id="exchangeCardSelect"></div>
-        </div>
-
-        <button id="nextTurn" style="background: rgb(192, 192, 192)" >NEXT TURN</button>
     </body> 
 </html>

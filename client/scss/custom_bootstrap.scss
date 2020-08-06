@@ -1,10 +1,36 @@
-$theme-colors: (
-  "primary": #ffffff,
-  "secondary": #000000
-);
+// 1 - Load variables to overwrite bootstrap.
+// 2 - Load required bootstrap sass files.
+// 3 - Load optional bootstrap sass files.
+// 4 - Load custom app sass files (if any).
 
-// @import "../../node_modules/bootstrap/scss/functions";
-// @import "../../node_modules/bootstrap/scss/variables";
-// @import "../../node_modules/bootstrap/scss/mixins";
+// --------------------------------------------------------
+// Import variables to overwrite bootstrap defaults.
+// --------------------------------------------------------
+   @import "variables";
 
-@import "../../node_modules/bootstrap/scss/bootstrap";
+
+// --------------------------------------------------------
+// Import required bootstrap sass files.
+// --------------------------------------------------------
+  @import "../../node_modules/bootstrap/scss/functions";
+  @import "../../node_modules/bootstrap/scss/variables";
+  @import "../../node_modules/bootstrap/scss/mixins";
+
+  // @import "../../node_modules/bootstrap/scss/bootstrap";
+
+
+
+/* --------------------------------------------------------
+  Bootstrap modules needed for this project.
+   -------------------------------------------------------- */
+   @import "../../node_modules/bootstrap/scss/grid";
+   @import "../../node_modules/bootstrap/scss/forms";
+   @import "../../node_modules/bootstrap/scss/buttons";
+   @import "../../node_modules/bootstrap/scss/utilities";
+   @import "../../node_modules/bootstrap/scss/type";
+   @import "../../node_modules/bootstrap/scss/reboot";
+
+
+/* --------------------------------------------------------
+  Custom sass.
+   -------------------------------------------------------- */
