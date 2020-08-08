@@ -47,25 +47,25 @@ window.onload = () => {
         if(playerId != actionPayload.actorId) {
             clearReactionTab()
             $('#reaction').css("display", "block")
-            $('#reaction').append(`<button class="reactionSel" value="confirm">Confirm</button>`)
+            $('#reaction').append(`<button class="reactionSel btn btn-secondary" value="confirm">Confirm</button>`)
 
             //If the action is take foreign aid, can be blocked by claiming duke
             if (actionPayload.intent == "foreign") {
-                $('#reaction').append(`<button class="reactionSel" value="block-duke">Claim to be Duke</button>`)
+                $('#reaction').append(`<button class="reactionSel btn btn-secondary" value="block-duke">Claim to be Duke</button>`)
             }
             //If the action is other than income, coup or foreign, can challenge
             else if (actionPayload.intent != "income" && actionPayload.intent != "coup") {
-                $('#reaction').append(`<button class="reactionSel" id="challenge-reaction" value="challenge">Challenge</button>`)
+                $('#reaction').append(`<button class="reactionSel btn btn-secondary" id="challenge-reaction" value="challenge">Challenge</button>`)
             }
 
             //If the action is assassinate and the player is the target, can claim contessa
             if (actionPayload.intent == "assassinate" && playerId === actionPayload.victimId) {
-                $('#reaction').append(`<button class="reactionSel" value="block-contessa">Claim to be Contessa</button>`)
+                $('#reaction').append(`<button class="reactionSel btn btn-secondary" value="block-contessa">Claim to be Contessa</button>`)
             }
             //If the action is steal and the player is the target, can claim captain or ambassador
             else if (actionPayload.intent == "steal" && playerId === actionPayload.victimId) {
-                $('#reaction').append(`<button class="reactionSel" value="block-captain">Claim to be Captain</button>`)
-                $('#reaction').append(`<button class="reactionSel" value="block-ambassador">Claim to be Ambassador</button>`)
+                $('#reaction').append(`<button class="reactionSel btn btn-secondary" value="block-captain">Claim to be Captain</button>`)
+                $('#reaction').append(`<button class="reactionSel btn btn-secondary" value="block-ambassador">Claim to be Ambassador</button>`)
             }
             $(".reactionSel").on("click", (event) => handleActionChallengeResponse('currentActionResponse', event.target))
         }
@@ -77,8 +77,8 @@ window.onload = () => {
         //The player who claimed a role to block an action can't challenge himself/herself
         if(playerId != actionPayload.actorId) {
             $('#reaction').css("display", "block")
-            $('#reaction').append(`<button class="reactionSel" value="confirm">Confirm</button>`)
-            $('#reaction').append(`<button class="reactionSel" id="challenge-reaction" value="challenge">Challenge</button>`)
+            $('#reaction').append(`<button class="reactionSel btn btn-secondary" value="confirm">Confirm</button>`)
+            $('#reaction').append(`<button class="reactionSel btn btn-secondary" id="challenge-reaction" value="challenge">Challenge</button>`)
             $(".reactionSel").on("click", (event) => handleActionChallengeResponse('blockResponse', event.target))
         }
     })
@@ -189,23 +189,28 @@ window.onload = () => {
     })
 
     // PASS THE TURN TO THE NEXT PLAYER
-    $("#nextTurn").on("click", function() {
-        const intention = $("input[name='action']:checked").attr("id")
-        if (intention == "assassinate" || intention == "steal" || intention == "coup")
-            var to = $("input[name='playerSel']:checked").data('name').toString() // gets data-name
-        socket.emit('action', new ActionPayload(intention, to))
+    $("#actions-list").on("click", ".action", function(event) {
+        var actionType = event.target.id
+        //If event.target.id has no id, we have clicked on an action that has a victim
+        if (actionType === "") {
+            //We get the id from the button holding the dropdown
+            actionType = event.target.parentElement.previousElementSibling.id
+            var victim = event.target.value.toString() // gets data-name
+        }
+        socket.emit('action', new ActionPayload(actionType, victim))
     })
     
+    //DEPRECATED
     // Toggle player selection (assassinate, steal, coup)
-    $("input[name='action']").change(function() {
-        const intention = $(this).attr('id')
-        if (intention == "assassinate" || intention == "steal" || intention == "coup") {
-            $("#intention").text(intention)
-            $("#playerSelector").css("display","block")
-        } else {
-            $("#playerSelector").css("display","none")
-        }
-    })
+    // $("input[name='action']").change(function() {
+    //     const intention = $(this).attr('id')
+    //     if (intention == "assassinate" || intention == "steal" || intention == "coup") {
+    //         $("#intention").text(intention)
+    //         $("#playerSelector").css("display","block")
+    //     } else {
+    //         $("#playerSelector").css("display","none")
+    //     }
+    // })
 
     //Updates the 'player status' 
     function updatePlayerStatus(p) {
@@ -221,9 +226,9 @@ window.onload = () => {
 
     //Disable buttons of actions which are unavailable (not enough coins, must coup)
     function limitPlayerActions() {
-        $("input[name='action']").prop('disabled', false)
+        $(".action, .action-dropdown").prop('disabled', false)
         if (playerCoins >= 10) {
-            $("input[name='action']").not("#coup").prop('disabled', true)
+            $(".action, .action-dropdown").not("#coup").prop('disabled', true)
         } else {
             if (playerCoins < 7)
                 $("#coup").prop('disabled', true)
@@ -236,7 +241,7 @@ window.onload = () => {
     function updateAllPlayersDisplay(payload) {
         var playersInfo = payload.gameState.players
         var playersDisplay = $("#otherPlayers")
-        var playerSelector = $("#playerSelector > div")
+        var playerSelector = $(".victimSelector")
         $(".player_container").remove()
         playerSelector.empty()
         const rotationAngle = 360 / Object.keys(playersInfo).length
@@ -245,18 +250,35 @@ window.onload = () => {
             const player = playersInfo[id]
             playersDisplay.append(
                 `<div class="player_container" style="transform: translate(-50%, -50%) rotate(${currentAngle}deg);">
-                    <div class="moon" style="transform: rotate(-${currentAngle}deg);">
-                        <p>Name: ${player.name};
-                        Card1: ${player.firstCard} (${player.firstCardAlive}); 
-                        Card2: ${player.secondCard} (${player.secondCardAlive}); 
-                        Coins: ${player.coins}</p>
+                    <div class="card moon" style="transform: rotate(-${currentAngle}deg);">
+                        <div class="card-body">
+                            <h5 class="card-title">Name: ${player.name}</h5>
+                            <div class="card-text">
+                                <div>Card1: ${player.firstCard} (${player.firstCardAlive})</div>
+                                <div>Card2: ${player.secondCard} (${player.secondCardAlive})</div>
+                                <div>Coins: ${player.coins}</div>
+                            </div>
+                        </div>
                     </div>
                 </div>`
+                // `<div class="player_container" style="transform: translate(-50%, -50%) rotate(${currentAngle}deg);">
+                //     <div class="moon" style="transform: rotate(-${currentAngle}deg);">
+                //         <div>Name: ${player.name}</div>
+                //         <div>Card1: ${player.firstCard} (${player.firstCardAlive})</div>
+                //         <div>Card2: ${player.secondCard} (${player.secondCardAlive})</div>
+                //         <div>Coins: ${player.coins}</div>
+                //     </div>
+                // </div>`
             )
             currentAngle += rotationAngle
+
+            //If the current player parsed isn't the current player, add to victimList
             if(id != playerId) {
-                playerSelector.append(`<label for="player-${player.name}">${player.name}</label>
-                <input type="radio" id="player-${player.name}" data-name="${player.name}" name="playerSel"></button>`)
+                playerSelector.append(
+                    `<button class="dropdown-item action" value="${player.name}">${player.name}</button>`
+                    // `<label for="player-${player.name}">${player.name}</label>
+                    // <input type="radio" id="player-${player.name}" data-name="${player.name}" name="playerSel">`
+                )
             }
         }
     }
