@@ -146,38 +146,3 @@
     
     })(typeof exports === 'undefined' ? this.actions = {} : exports) 
     
-    //https://caolan.uk/articles/writing-for-node-and-the-browser/
-    // use classes for both frontend and backend
-    // wtf: 
-    //https://stackoverflow.com/questions/2421911/what-is-the-purpose-of-wrapping-whole-javascript-files-in-anonymous-functions-li
-    
-    
-    /**
-     * Javascript closure
-     * Ce fichier est lu par un autre fichier (probablement javascript). 
-     * le premier set de parenthese cree un 'object literal', aussi nomme anonymous function.
-     * c'est seulement une fonction qui ne possede pas de nom. a l'interieur de la deuxieme set de parentheses se trouve '(exports)'
-     * c'est juste le nom d'un argument qu'on passe a l'anonymous function, un argument qui va etre utilise a l'interieur de celui-ci
-     * pour en fait le modifier (dans le cas ici, c'est pour faire une affectation avec un objet qui contient toutes mes classes). A la fin,
-     * on a un autre set de parenthese. c'est pour activer la fonction juste une fois. c'est comme si je fais...
-     * 
-     * const hello = fonctionAnonyme();
-     * 
-     * hello(); 
-     * 
-     * Mais ca evite que cette fonction ait un scope global (c'est-a-dire, il est cree et ensuite peut etre utilise n'importe ou ailleurs, parce que je
-     * l'ai affecte a ma variable hello -- j'aurais pu faire hello() ailleurs dans mon code, mais je ne veux pas faire ca plus qu'une fois)
-     * 
-     * Donc, en fait dans cette parenthese je mets un argument, qui va etre passe a ma fonction anonyme pour qu'elle soit run une fois.
-     * L'expression est: typeof exports === 'undefined'? this.actions={} : exports
-     * 
-     * En fait, c'est juste dire si exports est defini ou pas. Si il est defini, il reste tel quel. Sinon, le javascript qui fait appel a ce script 
-     * (par exemple, dans html, <script src="actions.js"></script>), va avoir un objet nul {} assigne a la propriete 'actions'. 
-     * 
-     * Sur Node.JS, quand on fait un require sur ce module, il va run la fonction anonyme et va lui passer exports, qui est une variable deja defini et qui referencie module.exports
-     * ... et ainsi exports sera affecte a la fin avec toutes les classes que j'ai defini dans ce fichier.
-     * 
-     * Sur le frontend, quand on fait <script>...</script>, puisque exports n'est pas une variable definie (c'est seulement avec NodeJS)
-     * une nouvelle propriete appelee 'actions' sera cree sur le 'this' global (?) et ensuite quand la fonction anonyme va run
-     * il va affecte toutes mes classes a cet objet vide (ligne exports = {mes classes et fonctions a exporter...})
-     */
