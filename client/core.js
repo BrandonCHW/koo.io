@@ -191,26 +191,25 @@ window.onload = () => {
     // PASS THE TURN TO THE NEXT PLAYER
     $("#actions-list").on("click", ".action", function(event) {
         var actionType = event.target.id
-        //If event.target.id has no id, we have clicked on an action that has a victim
-        if (actionType === "") {
-            //We get the id from the button holding the dropdown
-            actionType = event.target.parentElement.previousElementSibling.id
-            var victim = event.target.value.toString() // gets data-name
+        if (actionType == "coup" || actionType == "steal" || actionType == "assassinate") {
+            //Make the display of every other player available to be clicked
+            $(".otherPlayerDisplay").prop("disabled", false)
+            $(".otherPlayerDisplay").on("click", function(event) {
+                clearVictimSelection()
+                socket.emit('action', new ActionPayload(actionType, event.currentTarget.value))
+            })
+            //Disable all actions and make the cancel button accessible
+            $(".action").prop('disabled', true)
+            $("#cancelAction").css("display", "block")
+            $("#cancelAction").prop('disabled', false)
+            $("#cancelAction").on("click", function(event) {
+                clearVictimSelection()
+                limitPlayerActions()
+            })
+        } else{
+            socket.emit('action', new ActionPayload(actionType, ""))
         }
-        socket.emit('action', new ActionPayload(actionType, victim))
     })
-    
-    //DEPRECATED
-    // Toggle player selection (assassinate, steal, coup)
-    // $("input[name='action']").change(function() {
-    //     const intention = $(this).attr('id')
-    //     if (intention == "assassinate" || intention == "steal" || intention == "coup") {
-    //         $("#intention").text(intention)
-    //         $("#playerSelector").css("display","block")
-    //     } else {
-    //         $("#playerSelector").css("display","none")
-    //     }
-    // })
 
     //Updates the 'player status' 
     function updatePlayerStatus(p) {
@@ -226,9 +225,9 @@ window.onload = () => {
 
     //Disable buttons of actions which are unavailable (not enough coins, must coup)
     function limitPlayerActions() {
-        $(".action, .action-dropdown").prop('disabled', false)
+        $(".action").prop('disabled', false)
         if (playerCoins >= 10) {
-            $(".action, .action-dropdown").not("#coup").prop('disabled', true)
+            $(".action").not("#coup").prop('disabled', true)
         } else {
             if (playerCoins < 7)
                 $("#coup").prop('disabled', true)
@@ -237,49 +236,37 @@ window.onload = () => {
         }
     }
     
-    //Updates the 'other players'
+    //Updates the circular display with all the players
     function updateAllPlayersDisplay(payload) {
         var playersInfo = payload.gameState.players
-        var playersDisplay = $("#otherPlayers")
-        var playerSelector = $(".victimSelector")
+        var playersDisplay = $("#allPlayers")
         $(".player_container").remove()
-        playerSelector.empty()
         const rotationAngle = 360 / Object.keys(playersInfo).length
         var currentAngle = 0
         for(const id in playersInfo) {
             const player = playersInfo[id]
+
+            //If the display holds information of other players, mark it with the "otherPlayerDisplay" class
+            var otherPlayerDisplay = ""
+            if(id != playerId) {
+                otherPlayerDisplay = "otherPlayerDisplay"
+            }
+
             playersDisplay.append(
                 `<div class="player_container" style="transform: translate(-50%, -50%) rotate(${currentAngle}deg);">
-                    <div class="card moon" style="transform: rotate(-${currentAngle}deg);">
-                        <div class="card-body">
-                            <h5 class="card-title">Name: ${player.name}</h5>
-                            <div class="card-text">
-                                <div>Card1: ${player.firstCard} (${player.firstCardAlive})</div>
-                                <div>Card2: ${player.secondCard} (${player.secondCardAlive})</div>
-                                <div>Coins: ${player.coins}</div>
-                            </div>
+                    <button value="${player.name}" class="moon ${otherPlayerDisplay}" disabled="true" style="transform: rotate(-${currentAngle}deg);">
+                        <div class="card-header">
+                            <h5>Name: ${player.name}</h5>
                         </div>
-                    </div>
+                        <div class="card-body">
+                            <div>Card1: ${player.firstCard} (${player.firstCardAlive})</div>
+                            <div>Card2: ${player.secondCard} (${player.secondCardAlive})</div>
+                            <div>Coins: ${player.coins}</div>
+                        </div>
+                    </button>
                 </div>`
-                // `<div class="player_container" style="transform: translate(-50%, -50%) rotate(${currentAngle}deg);">
-                //     <div class="moon" style="transform: rotate(-${currentAngle}deg);">
-                //         <div>Name: ${player.name}</div>
-                //         <div>Card1: ${player.firstCard} (${player.firstCardAlive})</div>
-                //         <div>Card2: ${player.secondCard} (${player.secondCardAlive})</div>
-                //         <div>Coins: ${player.coins}</div>
-                //     </div>
-                // </div>`
             )
             currentAngle += rotationAngle
-
-            //If the current player parsed isn't the current player, add to victimList
-            if(id != playerId) {
-                playerSelector.append(
-                    `<button class="dropdown-item action" value="${player.name}">${player.name}</button>`
-                    // `<label for="player-${player.name}">${player.name}</label>
-                    // <input type="radio" id="player-${player.name}" data-name="${player.name}" name="playerSel">`
-                )
-            }
         }
     }
     
@@ -301,6 +288,14 @@ window.onload = () => {
     function clearReactionTab() {
         $('#reaction').empty()
         $('#reaction').css("display: none")
+    }
+
+    function clearVictimSelection() {
+        $(".otherPlayerDisplay").prop("disabled", true)
+        $(".otherPlayerDisplay").off("click")
+        $("#cancelAction").off("click")
+        $("#cancelAction").css("display", "none")
+        $("#cancelAction").prop('disabled', true)
     }
 
     function handleActionChallengeResponse(eventName, button) {

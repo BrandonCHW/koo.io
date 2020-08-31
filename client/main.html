@@ -81,7 +81,7 @@
             <!-- All players data -->
             <div class="row">
                 <div class="col">
-                    <div id="otherPlayers" class="circle_container">
+                    <div id="allPlayers" class="circle_container">
                         <img class="transparent_square" src="img/transparent_square.png" width="2" height="2">
     
                         <div class="central_text text-center">
@@ -134,26 +134,13 @@
                             <div class="text-center">Non-role specific actions</div>
                             <div class="row">
                                 <div class="col-xl-4 d-flex justify-content-center">
-                                    <!-- <label for="income">Income: +1 Coin</label>
-                                    <input type="radio" id="income" name="action"> -->
                                     <button class="btn btn-secondary action" id="income">Income: +1 Coin</button>
                                 </div>
                                 <div class="col-xl-4 d-flex justify-content-center">
-                                    <!-- <label for="foreign">Foreign: +2 Coin</label>
-                                    <input type="radio" id="foreign" name="action"> -->
                                     <button class="btn btn-secondary action" id="foreign">Foreign: +2 Coins</button>
                                 </div>
                                 <div class="col-xl-4 d-flex justify-content-center">
-                                    <!-- <label for="coup">Coup: -7 Coins</label>
-                                    <input type="radio" id="coup" name="action"> -->
-                                    <div class="dropdown">
-                                        <button class="btn btn-secondary dropdown-toggle action-dropdown" id="coup" data-toggle="dropdown">
-                                            Coup: -7 Coins
-                                        </button>
-                                        <div class="dropdown-menu victimSelector">
-                                            <button class="dropdown-item action" value="Yee">You shouldn't be able to see this ree</button>
-                                        </div>
-                                    </div>
+                                    <button class="btn btn-secondary action" id="coup">Coup: -7 Coins</button>
                                 </div>
                             </div>
                         </div>
@@ -161,53 +148,24 @@
                             <div class="text-center">Role specific actions</div>
                             <div class="row">
                                 <div class="col-sm d-flex justify-content-center">
-                                    <!-- <label for="tax">Tax: +3 Coins</label>
-                                    <input type="radio" id="tax" name="action"> -->
                                     <button class="btn btn-secondary action" id="tax">Tax: +3 Coins</button>
                                 </div>
                                 <div class="col-sm d-flex justify-content-center">
-                                    <!-- <label for="steal">Steal: Yoink (+2 coins)</label>
-                                    <input type="radio" id="steal" name="action"> -->
-                                    <div class="dropdown">
-                                        <button class="btn btn-secondary dropdown-toggle action-dropdown" id="steal" data-toggle="dropdown">
-                                            Steal: Yoink (+2 Coins)
-                                        </button>
-                                        <div class="dropdown-menu victimSelector">
-                                            <button class="dropdown-item action" value="Yee">You shouldn't be able to see this ree</button>
-                                        </div>
-                                    </div>
+                                    <button class="btn btn-secondary action" id="steal">Steal: Yoink (+2 Coins)</button>
                                 </div>
                                 <div class="col-sm d-flex justify-content-center">
-                                    <!-- <label for="assassinate">Assassinate: Kill (-3 Coins)</label>
-                                    <input type="radio" id="assassinate" name="action"> -->
-                                    <div class="dropdown">
-                                        <button class="btn btn-secondary dropdown-toggle action-dropdown" id="assassinate" data-toggle="dropdown">
-                                            Assassinate: Kill (-3 Coins)
-                                        </button>
-                                        <div class="dropdown-menu victimSelector">
-                                            <button class="dropdown-item action" value="Yee">You shouldn't be able to see this ree</button>
-                                        </div>
-                                    </div>
+                                    <button class="btn btn-secondary action" id="assassinate">Assassinate: Kill (-3 Coins)</button>
                                 </div>
                                 <div class="col-sm d-flex justify-content-center">
-                                    <!-- <label for="exchange">Exchange: Take 2 cards, keep 1</label>
-                                    <input type="radio" id="exchange" name="action"> -->
                                     <button class="btn btn-secondary action" id="exchange">Exchange: Take 2 cards, keep 1-2</button>
                                 </div>
                             </div>
                         </div>
                     </div>
                     <div class="row">
-                        <div class="col-6">
-                            <div id="playerSelector" style="display: none;">
-                                <h4>Intention: <span id="intention">INTENTION</span></h4>
-                                <div>
-                                    <button class="btn btn-secondary">you shouldn't be able to see this</button>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-6">
-                            <button id="nextTurn" class="btn btn-secondary" >NEXT TURN</button>
+                        <div class="col d-flex justify-content-center">
+                            <button id="nextTurn" class="btn btn-secondary mx-1 mx-md-3" >NEXT TURN</button>
+                            <button id="cancelAction" class="btn btn-secondary mx-1 mx-md-3" disabled="true" style="display: none">CANCEL</button>
                         </div>
                     </div>
                 </div>
