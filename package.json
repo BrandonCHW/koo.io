@@ -25,6 +25,6 @@
     "jquery": "^3.5.1",
     "node-sass": "^4.14.1",
     "popper.js": "^1.16.1",
-    "socket.io": "^2.3.0"
+    "socket.io": "^2.4.0"
   }
 }
